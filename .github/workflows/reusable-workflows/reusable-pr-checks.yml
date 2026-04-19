@@ -1,0 +1,89 @@
+name: Reusable PR Checks
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Node.js version to use'
+        type: number
+        default: 24
+      use-lerna:
+        description: 'Use Lerna for pre-release publishing (set false for simple repos)'
+        type: boolean
+        default: true
+      pre-release-tag:
+        description: 'npm dist-tag used when publishing a pre-release'
+        type: string
+        default: rc
+    secrets:
+      npm-token:
+        description: 'NPM token for publishing pre-release packages'
+        required: false
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run lint
+      - run: npm run format
+      - run: npm run typecheck
+
+  check-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.check.outputs.should_publish }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+      - name: Check commit message for [publish]
+        id: check
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "commit_msg=$COMMIT_MSG"
+          if echo "$COMMIT_MSG" | grep -qF '[publish]'; then
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  pre-release:
+    needs: [test-and-build, check-publish]
+    if: needs.check-publish.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          registry-url: https://registry.npmjs.org/
+          cache: 'npm'
+      - name: Fetch short SHA
+        id: fetch-short-sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      - run: npm ci
+      - run: npm run build
+      - name: Pre-release with Lerna (monorepo)
+        if: ${{ inputs.use-lerna }}
+        run: npx lerna publish prerelease --preid=${{ steps.fetch-short-sha.outputs.sha_short }} --dist-tag ${{ inputs.pre-release-tag }} --no-git-tag-version --no-push --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+      - name: Pre-release with npm (simple repo)
+        if: ${{ !inputs.use-lerna }}
+        run: |
+          npm version prerelease --preid=${{ steps.fetch-short-sha.outputs.sha_short }} --no-git-tag-version
+          npm publish --tag ${{ inputs.pre-release-tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+

@@ -1,0 +1,81 @@
+name: Reusable Publish to npm
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Node.js version to use'
+        type: number
+        default: 24
+      use-lerna:
+        description: 'Use Lerna for versioning and publishing (set false for simple repos)'
+        type: boolean
+        default: true
+    secrets:
+      npm-token:
+        description: 'NPM token for publishing packages'
+        required: true
+      github-token:
+        description: 'GitHub token for pushing version commits and tags'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  version-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.github-token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          registry-url: https://registry.npmjs.org/
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run lint
+      - run: npm run format
+      - run: npm run typecheck
+
+      - name: configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: version packages with Lerna (monorepo)
+        if: ${{ inputs.use-lerna }}
+        run: npx lerna version --conventional-commits --yes
+        env:
+          GH_TOKEN: ${{ secrets.github-token }}
+          HUSKY: 0
+
+      - name: publish to npm with Lerna (monorepo)
+        if: ${{ inputs.use-lerna }}
+        run: npx lerna publish from-git --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+
+      - name: version package with npm (simple repo)
+        if: ${{ !inputs.use-lerna }}
+        run: |
+          BUMP=$(npx conventional-recommended-bump -p angular)
+          npm version $BUMP
+        env:
+          HUSKY: 0
+
+      - name: push version commit and tag (simple repo)
+        if: ${{ !inputs.use-lerna }}
+        run: |
+          git push
+          git push --tags
+
+      - name: publish to npm (simple repo)
+        if: ${{ !inputs.use-lerna }}
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
