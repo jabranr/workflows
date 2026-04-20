@@ -64,7 +64,7 @@ jobs:
         if: ${{ !inputs.use-lerna }}
         run: |
           BUMP=$(npx conventional-recommended-bump -p angular)
-          npm version $BUMP
+          npm version "$BUMP"
         env:
           HUSKY: 0
 
