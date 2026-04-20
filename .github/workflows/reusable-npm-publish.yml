@@ -30,6 +30,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.github-token }}
+      - uses: jabranr/workflows/.github/actions/actionlint@main
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
