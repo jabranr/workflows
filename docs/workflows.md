@@ -6,12 +6,18 @@ How to add, modify, and test reusable workflows in this repository.
 
 ```
 .github/
+├── actions/
+│   ├── actionlint/
+│   │   └── action.yml          # Lint workflows with actionlint
+│   └── wait-cf-pages-deployment/
+│       └── action.yml          # Poll for a completed Cloudflare Pages check
 └── workflows/
     ├── reusable-pr-checks.yml
-    └── reusable-npm-publish.yml
+    ├── reusable-npm-publish.yml
+    └── reusable-lighthouse.yml
 ```
 
-All reusable workflows live under `.github/workflows/`. Every file in that directory is a reusable workflow callable via `workflow_call`.
+Reusable workflows live under `.github/workflows/` and use `on: workflow_call:` as their sole trigger. Composite actions live under `.github/actions/` and use `runs: using: 'composite'`.
 
 ## Adding a New Workflow
 
@@ -101,6 +107,20 @@ Declare the minimum required `permissions:` at the workflow level:
 - Read-only workflows: `contents: read` (default; can be omitted).
 - Workflows that push commits or tags: `contents: write`.
 - Never grant `write-all` or omit permissions on publishing workflows.
+
+## Referencing a Composite Action from a Caller Repository
+
+Composite actions are referenced in a step's `uses:` field, not in `jobs.<id>.uses:`:
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: jabranr/workflows/.github/actions/actionlint@main
+  - uses: jabranr/workflows/.github/actions/wait-cf-pages-deployment@main
+```
+
+- Always pin to `@main`.
+- Composite actions accept no inputs and expose no secrets unless their `action.yml` declares them.
 
 ## Referencing a Workflow from a Caller Repository
 

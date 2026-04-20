@@ -1,0 +1,40 @@
+name: Validate Cloudflare Pages deployment
+description: Validate Cloudflare Pages deployment
+runs:
+  using: 'composite'
+  steps:
+    - name: Wait for Cloudflare Pages deployment
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const maxAttempts = 9; // 2 minutes with 15 second intervals
+          const intervalSeconds = 15;
+
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            console.log(`Attempt ${attempt}/${maxAttempts}: Checking for Cloudflare Pages deployment...`);
+
+            // Check for check runs
+            const { data: cfDeployCheck } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.after || context.sha,
+              check_name: "Cloudflare Pages",
+              status: "completed"
+            });
+
+            if (cfDeployCheck.total_count) {
+              const [cfCheck] = cfDeployCheck.check_runs;
+              console.log(`Found Cloudflare Pages check: ${cfCheck.name}`);
+              if (cfCheck.conclusion === "success") {
+                console.log("✓ Cloudflare Pages deployment successful!");
+                break;
+              } else {
+                throw new Error(`Cloudflare Pages deployment failed with conclusion: ${cfCheck.conclusion}`);
+              }
+            } else if (attempt < maxAttempts) {
+              console.log(`Retrying in ${intervalSeconds} seconds to check status for Cloudflare deployment...`);
+              await new Promise(resolve => setTimeout(resolve, intervalSeconds * 1000));
+            } else {
+              throw new Error("Timeout: Cloudflare Pages deployment did not complete in time");
+            }
+          }

@@ -1,6 +1,8 @@
-# workflows
+# Workflows
 
 Reusable GitHub Actions workflows for JavaScript/Node.js projects.
+
+> Highly opinionated for my own personal use. Use at your own risk!
 
 ## Available Workflows
 
@@ -119,6 +121,45 @@ jobs:
 2. Checks out the repository
 3. Runs Lighthouse against each URL in `urls`
 4. Uploads HTML reports to a `lighthouse-results` workflow artifact
+
+## Composite Actions
+
+Reusable composite actions live under `.github/actions/`. Reference them in a step's `uses:` field.
+
+---
+
+### `actions/actionlint`
+
+Downloads and runs [`actionlint`](https://github.com/rhysd/actionlint) against all workflow files in the repository. Place this step immediately after `actions/checkout`.
+
+**Usage**
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: jabranr/workflows/.github/actions/actionlint@main
+```
+
+No inputs or secrets.
+
+---
+
+### `actions/wait-cf-pages-deployment`
+
+Polls the GitHub Checks API until the **Cloudflare Pages** check run on the current commit (`context.sha`) reaches a `completed` state. Retries every 15 seconds for up to 2 minutes, then throws if the check has not completed or if it fails.
+
+Use this after triggering a Cloudflare Pages deployment to block subsequent steps (e.g. a Lighthouse audit) until the deployment is confirmed successful.
+
+**Usage**
+
+```yaml
+steps:
+  - uses: jabranr/workflows/.github/actions/wait-cf-pages-deployment@main
+```
+
+No inputs or secrets. Requires the workflow to have `checks: read` permission (GitHub's default for `GITHUB_TOKEN`).
+
+---
 
 ## License
 
