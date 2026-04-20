@@ -83,6 +83,43 @@ jobs:
 3. **Monorepo (Lerna):** versions packages with conventional commits, then publishes via `lerna publish from-git`
 4. **Simple repo:** bumps the version with `conventional-recommended-bump`, pushes the commit and tag, then publishes via `npm publish`
 
+---
+
+### `reusable-lighthouse.yml`
+
+Runs a [Lighthouse](https://github.com/foo-software/lighthouse-check-action) performance audit against one or more URLs and uploads the HTML reports as a workflow artifact. Intended to run after a deployment (e.g. to Cloudflare Pages).
+
+**Usage**
+
+```yaml
+jobs:
+  lighthouse:
+    uses: jabranr/workflows/.github/workflows/reusable-lighthouse.yml@main
+    with:
+      urls: 'https://my-app.pages.dev,https://my-app.pages.dev/login'
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**Inputs**
+
+| Input | Type | Default | Description |
+|---|---|---|---|
+| `urls` | string | — | Comma-separated list of URLs to audit |
+
+**Secrets**
+
+| Secret | Required | Description |
+|---|---|---|
+| `github-token` | Yes | GitHub token used to post Lighthouse results as a commit status |
+
+**Steps**
+
+1. Waits `wait-seconds` seconds for the deployment to propagate
+2. Checks out the repository
+3. Runs Lighthouse against each URL in `urls`
+4. Uploads HTML reports to a `lighthouse-results` workflow artifact
+
 ## License
 
 [MIT](./LICENSE) © Jabran Rafique

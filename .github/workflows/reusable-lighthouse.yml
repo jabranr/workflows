@@ -1,0 +1,41 @@
+name: Reusable Lighthouse Performance
+
+on:
+  workflow_call:
+    inputs:
+      urls:
+        description: 'Comma-separated list of URLs to audit'
+        type: string
+        required: true
+    secrets:
+      github-token:
+        description: 'GitHub token used to post Lighthouse results as a commit status'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create artifacts directory
+        run: mkdir -p "${{ github.workspace }}/tmp/artifacts"
+
+      - name: Run Lighthouse
+        uses: foo-software/lighthouse-check-action@master
+        with:
+          urls: "${{ inputs.urls }}"
+          gitAuthor: ${{ github.actor }}
+          gitBranch: ${{ github.ref }}
+          gitHubAccessToken: ${{ secrets.github-token }}
+          outputDirectory: "${{ github.workspace }}/tmp/artifacts"
+
+      - name: Upload Lighthouse artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: "${{ github.workspace }}/tmp/artifacts"
+
