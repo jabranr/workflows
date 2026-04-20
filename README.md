@@ -1,4 +1,4 @@
-# Workflows
+# Workflows [![Actionlint](https://github.com/jabranr/workflows/actions/workflows/actionlint.yml/badge.svg)](https://github.com/jabranr/workflows/actions/workflows/actionlint.yml)
 
 Reusable GitHub Actions workflows for JavaScript/Node.js projects.
 
