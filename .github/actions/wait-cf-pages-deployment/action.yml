@@ -1,11 +1,18 @@
 name: Validate Cloudflare Pages deployment
 description: Validate Cloudflare Pages deployment
+
+inputs:
+  github-token:
+    description: GitHub token
+    required: false
+
 runs:
   using: 'composite'
   steps:
     - name: Wait for Cloudflare Pages deployment
       uses: actions/github-script@v7
       with:
+        github-token: ${{ inputs.github-token || github.token }}
         script: |
           const maxAttempts = 9; // 2 minutes with 15 second intervals
           const intervalSeconds = 15;
