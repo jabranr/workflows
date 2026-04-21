@@ -117,8 +117,8 @@ jobs:
 
 **Steps**
 
-1. Waits `wait-seconds` seconds for the deployment to propagate
-2. Checks out the repository
+1. Checks out the repository
+2. Creates the artifacts output directory
 3. Runs Lighthouse against each URL in `urls`
 4. Uploads HTML reports to a `lighthouse-results` workflow artifact
 
@@ -157,7 +157,13 @@ steps:
   - uses: jabranr/workflows/.github/actions/wait-cf-pages-deployment@main
 ```
 
-No inputs or secrets. Requires the workflow to have `checks: read` permission (GitHub's default for `GITHUB_TOKEN`).
+**Inputs**
+
+| Input | Required | Description |
+|---|---|---|
+| `github-token` | No | GitHub token used to authenticate Checks API calls. Defaults to `github.token` when omitted. |
+
+Requires the workflow to have `checks: read` permission (GitHub's default for `GITHUB_TOKEN`).
 
 ---
 
