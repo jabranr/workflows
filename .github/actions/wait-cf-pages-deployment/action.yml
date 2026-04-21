@@ -45,10 +45,10 @@ runs:
                 console.log("Cloudflare Pages deployment is queued. Waiting...");
                 await new Promise(resolve => setTimeout(resolve, intervalSeconds * 1000));
               } else if (cfCheck.status === "in_progress") {
-                console.log("Cloudflare Pages deployment is in progress. Waiting...");
+                console.log(`Cloudflare Pages deployment is ${attempt < 2 ? '' : 'still '}in progress. Waiting...`);
                 await new Promise(resolve => setTimeout(resolve, intervalSeconds * 1000));
               } else if (cfCheck.status === "completed") {
-                console.log(`Found Cloudflare Pages check: ${cfCheck.name}`);
+                console.log('Cloudflare Pages status updated...');
                 if (cfCheck.conclusion === "success") {
                   console.log("✓ Cloudflare Pages deployment successful!");
                   break;
