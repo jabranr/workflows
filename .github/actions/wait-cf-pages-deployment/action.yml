@@ -20,15 +20,47 @@ runs:
           for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             console.log(`Attempt ${attempt}/${maxAttempts}: Checking for Cloudflare Pages deployment...`);
 
-            // Checking for commit
-            console.log(context.payload.after);
-            console.log('=======================');
-            console.log(context.sha);
-            console.log('=======================');
-            console.log(JSON.stringify(context.payload));
-
             // Check for check runs
-            const { data: cfDeployCheck } = await github.rest.checks.listForRef({
+            
+
+            const { data: cfDeployCheckInQueued } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.after || context.sha,
+              check_name: "Cloudflare Pages",
+              status: "queued"
+            });
+
+            console.log('==========================');
+            console.log(JSON.stringify(cfDeployCheckInQueued.total_count));
+            console.log('==========================');
+
+            if (cfDeployCheckInQueued.total_count) {
+              console.log("Cloudflare Pages deployment is in progress. Waiting...");
+              await new Promise(resolve => setTimeout(resolve, intervalSeconds * 1000));
+              continue;
+            }
+
+            const { data: cfDeployCheckInProgress } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.after || context.sha,
+              check_name: "Cloudflare Pages",
+              status: "in_progress"
+            });
+
+
+            console.log('==========================');
+            console.log(JSON.stringify(cfDeployCheckInProgress.total_count));
+            console.log('==========================');
+
+            if (cfDeployCheckInProgress.total_count) {
+              console.log("Cloudflare Pages deployment is in progress. Waiting...");
+              await new Promise(resolve => setTimeout(resolve, intervalSeconds * 1000));
+              continue;
+            }
+
+            const { data: cfDeployCheckCompleted } = await github.rest.checks.listForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.payload.after || context.sha,
@@ -36,11 +68,12 @@ runs:
               status: "completed"
             });
 
-            console.log('=======================');
-            console.log(JSON.stringify(cfDeployCheck));
+            console.log('==========================');
+            console.log(JSON.stringify(cfDeployCheckCompleted.total_count));
+            console.log('==========================');
 
-            if (cfDeployCheck.total_count) {
-              const [cfCheck] = cfDeployCheck.check_runs;
+            if (cfDeployCheckCompleted.total_count) {
+              const [cfCheck] = cfDeployCheckCompleted.check_runs;
               console.log(`Found Cloudflare Pages check: ${cfCheck.name}`);
               if (cfCheck.conclusion === "success") {
                 console.log("✓ Cloudflare Pages deployment successful!");
