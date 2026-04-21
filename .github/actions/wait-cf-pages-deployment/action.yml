@@ -14,47 +14,5 @@ runs:
       with:
         github-token: ${{ inputs.github-token || github.token }}
         script: |
-          const maxAttempts = 9; // 2 minutes with 15 second intervals
-          const intervalSeconds = 15;
-          let checkEverFound = false;
-
-          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            console.log(`Attempt ${attempt}/${maxAttempts}: Checking for Cloudflare Pages deployment...`);
-
-            const { data: cfDeployCheck } = await github.rest.checks.listForRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: context.payload.after || context.sha,
-              check_name: "Cloudflare Pages"
-            });
-
-            if (!cfDeployCheck.total_count) {
-              if (attempt < maxAttempts) {
-                console.log(`Retrying in ${intervalSeconds} seconds to check status for Cloudflare deployment...`);
-                await new Promise(resolve => setTimeout(resolve, intervalSeconds * 1000));
-              } else if (checkEverFound) {
-                throw new Error("Timeout: Cloudflare Pages deployment did not complete in time");
-              } else {
-                console.log("No Cloudflare Pages deployment check found. Skipping...");
-              }
-            } else {
-              checkEverFound = true;
-              const [cfCheck] = cfDeployCheck.check_runs;
-
-              if (cfCheck.status === "queued") {
-                console.log("Cloudflare Pages deployment is queued. Waiting...");
-                await new Promise(resolve => setTimeout(resolve, intervalSeconds * 1000));
-              } else if (cfCheck.status === "in_progress") {
-                console.log(`Cloudflare Pages deployment is ${attempt < 2 ? '' : 'still '}in progress. Waiting...`);
-                await new Promise(resolve => setTimeout(resolve, intervalSeconds * 1000));
-              } else if (cfCheck.status === "completed") {
-                console.log('Cloudflare Pages status updated...');
-                if (cfCheck.conclusion === "success") {
-                  console.log("✓ Cloudflare Pages deployment successful!");
-                  break;
-                } else {
-                  throw new Error(`Cloudflare Pages deployment failed with conclusion: ${cfCheck.conclusion}`);
-                }
-              }
-            }
-          }
+          const waitForCloudflarePagesDeployment = require('${{ github.action_path }}/wait-cf-pages-deployment.js');
+          await waitForCloudflarePagesDeployment({ github, context });
