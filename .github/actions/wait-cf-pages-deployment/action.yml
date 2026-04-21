@@ -36,6 +36,9 @@ runs:
               status: "completed"
             });
 
+            console.log('=======================');
+            console.log(JSON.stringify(cfDeployCheck));
+
             if (cfDeployCheck.total_count) {
               const [cfCheck] = cfDeployCheck.check_runs;
               console.log(`Found Cloudflare Pages check: ${cfCheck.name}`);
