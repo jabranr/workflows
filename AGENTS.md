@@ -4,13 +4,13 @@ A library of reusable GitHub Actions workflows for JavaScript/Node.js projects, 
 
 ## Quick Facts
 
-| | |
-|---|---|
-| **Language** | YAML only — no compiled or interpreted source code |
-| **Package manager** | `npm` (no `package.json` in this repo) |
-| **Local build/test** | None — validate with `actionlint` (see [docs/workflows.md](docs/workflows.md)) |
-| **Default Node.js** | 24 |
-| **Versioning** | Conventional Commits → automated via `reusable-npm-publish.yml` |
+|                      |                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| **Language**         | YAML only — no compiled or interpreted source code                                   |
+| **Package manager**  | `npm` (package.json exists for dev tooling only — Prettier)                          |
+| **Local build/test** | `npm run format:check` and `actionlint` (see [docs/workflows.md](docs/workflows.md)) |
+| **Default Node.js**  | 24                                                                                   |
+| **Versioning**       | Conventional Commits → automated via `reusable-npm-publish.yml`                      |
 
 ## Codebase Map
 
@@ -38,4 +38,3 @@ docs/
 - [Workflow authoring patterns](docs/workflows.md) — structure, CI step order, publishing requirements, Lerna vs npm branching
 - [YAML style](docs/yaml-style.md) — indentation, quoting, naming conventions
 - [Git workflow](docs/git-workflow.md) — commit types, the `[publish]` pre-release trigger, tagging rules
-

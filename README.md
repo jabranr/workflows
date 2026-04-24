@@ -17,26 +17,26 @@ jobs:
   pr-checks:
     uses: jabranr/workflows/.github/workflows/reusable-pr-checks.yml@main
     with:
-      node-version: 24       # optional, default: 24
-      use-lerna: true        # optional, default: true
-      pre-release-tag: rc    # optional, default: rc
+      node-version: 24 # optional, default: 24
+      use-lerna: true # optional, default: true
+      pre-release-tag: rc # optional, default: rc
     secrets:
-      npm-token: ${{ secrets.NPM_TOKEN }}   # optional, only needed for pre-release publishing
+      npm-token: ${{ secrets.NPM_TOKEN }} # optional, only needed for pre-release publishing
 ```
 
 **Inputs**
 
-| Input | Type | Default | Description |
-|---|---|---|---|
-| `node-version` | number | `24` | Node.js version to use |
-| `use-lerna` | boolean | `true` | Use Lerna for pre-release publishing (set `false` for simple repos) |
-| `pre-release-tag` | string | `rc` | npm dist-tag used when publishing a pre-release |
+| Input             | Type    | Default | Description                                                         |
+| ----------------- | ------- | ------- | ------------------------------------------------------------------- |
+| `node-version`    | number  | `24`    | Node.js version to use                                              |
+| `use-lerna`       | boolean | `true`  | Use Lerna for pre-release publishing (set `false` for simple repos) |
+| `pre-release-tag` | string  | `rc`    | npm dist-tag used when publishing a pre-release                     |
 
 **Secrets**
 
-| Secret | Required | Description |
-|---|---|---|
-| `npm-token` | No | NPM token for publishing pre-release packages |
+| Secret      | Required | Description                                   |
+| ----------- | -------- | --------------------------------------------- |
+| `npm-token` | No       | NPM token for publishing pre-release packages |
 
 **Jobs**
 
@@ -57,8 +57,8 @@ jobs:
   publish:
     uses: jabranr/workflows/.github/workflows/reusable-npm-publish.yml@main
     with:
-      node-version: 24    # optional, default: 24
-      use-lerna: true     # optional, default: true
+      node-version: 24 # optional, default: 24
+      use-lerna: true # optional, default: true
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
       github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -66,17 +66,17 @@ jobs:
 
 **Inputs**
 
-| Input | Type | Default | Description |
-|---|---|---|---|
-| `node-version` | number | `24` | Node.js version to use |
-| `use-lerna` | boolean | `true` | Use Lerna for versioning and publishing (set `false` for simple repos) |
+| Input          | Type    | Default | Description                                                            |
+| -------------- | ------- | ------- | ---------------------------------------------------------------------- |
+| `node-version` | number  | `24`    | Node.js version to use                                                 |
+| `use-lerna`    | boolean | `true`  | Use Lerna for versioning and publishing (set `false` for simple repos) |
 
 **Secrets**
 
-| Secret | Required | Description |
-|---|---|---|
-| `npm-token` | Yes | NPM token for publishing packages |
-| `github-token` | Yes | GitHub token for pushing version commits and tags |
+| Secret         | Required | Description                                       |
+| -------------- | -------- | ------------------------------------------------- |
+| `npm-token`    | Yes      | NPM token for publishing packages                 |
+| `github-token` | Yes      | GitHub token for pushing version commits and tags |
 
 **Steps**
 
@@ -105,15 +105,15 @@ jobs:
 
 **Inputs**
 
-| Input | Type | Default | Description |
-|---|---|---|---|
-| `urls` | string | — | Comma-separated list of URLs to audit |
+| Input  | Type   | Default | Description                           |
+| ------ | ------ | ------- | ------------------------------------- |
+| `urls` | string | —       | Comma-separated list of URLs to audit |
 
 **Secrets**
 
-| Secret | Required | Description |
-|---|---|---|
-| `github-token` | Yes | GitHub token used to post Lighthouse results as a commit status |
+| Secret         | Required | Description                                                     |
+| -------------- | -------- | --------------------------------------------------------------- |
+| `github-token` | Yes      | GitHub token used to post Lighthouse results as a commit status |
 
 **Steps**
 
@@ -159,9 +159,9 @@ steps:
 
 **Inputs**
 
-| Input | Required | Description |
-|---|---|---|
-| `github-token` | No | GitHub token used to authenticate Checks API calls. Defaults to `github.token` when omitted. |
+| Input          | Required | Description                                                                                  |
+| -------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `github-token` | No       | GitHub token used to authenticate Checks API calls. Defaults to `github.token` when omitted. |
 
 Requires the workflow to have `checks: read` permission (GitHub's default for `GITHUB_TOKEN`).
 
@@ -170,4 +170,3 @@ Requires the workflow to have `checks: read` permission (GitHub's default for `G
 ## License
 
 [MIT](./LICENSE) © Jabran Rafique
-

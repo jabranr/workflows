@@ -43,7 +43,7 @@ on:
       # add secrets here
 
 permissions:
-  contents: read   # tighten to the minimum required
+  contents: read # tighten to the minimum required
 
 jobs:
   <job-id>:
@@ -66,7 +66,7 @@ Every workflow that runs tests must use this **exact step order**:
 - run: npm test
 - run: npm run build
 - run: npm run lint
-- run: npm run format
+- run: npm run format:check
 - run: npm run typecheck
 ```
 
@@ -76,13 +76,13 @@ Do not skip or reorder these steps. Callers rely on them running in this sequenc
 
 When a workflow step publishes to npm, these conditions must all be met:
 
-| Requirement | Reason |
-|---|---|
-| `registry-url: https://registry.npmjs.org/` in `setup-node` | Required for `NODE_AUTH_TOKEN` to be picked up |
-| `env: NODE_AUTH_TOKEN: ${{ secrets.npm-token }}` on the publish step | Auth for the npm registry |
-| `fetch-depth: 0` in `checkout` | Required for conventional-commit history traversal |
-| `token: ${{ secrets.github-token }}` in `checkout` | Required when the job pushes commits or tags |
-| `HUSKY: 0` on versioning steps | Prevents git hooks from blocking version commits |
+| Requirement                                                          | Reason                                             |
+| -------------------------------------------------------------------- | -------------------------------------------------- |
+| `registry-url: https://registry.npmjs.org/` in `setup-node`          | Required for `NODE_AUTH_TOKEN` to be picked up     |
+| `env: NODE_AUTH_TOKEN: ${{ secrets.npm-token }}` on the publish step | Auth for the npm registry                          |
+| `fetch-depth: 0` in `checkout`                                       | Required for conventional-commit history traversal |
+| `token: ${{ secrets.github-token }}` in `checkout`                   | Required when the job pushes commits or tags       |
+| `HUSKY: 0` on versioning steps                                       | Prevents git hooks from blocking version commits   |
 
 ## Supporting Both Monorepo and Simple Repo
 
@@ -140,7 +140,20 @@ jobs:
 
 ## Validating Workflow YAML Locally
 
-This repository has no local build step. Validate YAML syntax with:
+Install the dev dependencies once:
+
+```bash
+npm install
+```
+
+Check formatting with Prettier:
+
+```bash
+npm run format:check   # report issues
+npm run format         # rewrite files in place
+```
+
+Validate YAML syntax with:
 
 ```bash
 npx js-yaml .github/workflows/reusable-pr-checks.yml
@@ -156,4 +169,3 @@ actionlint
 ## Updating README.md
 
 After adding or changing a workflow, update `README.md` to reflect the new inputs, secrets, and behaviour. The README is the consumer-facing reference.
-

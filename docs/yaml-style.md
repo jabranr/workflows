@@ -32,15 +32,15 @@ Conventions for authoring workflow files in this repository.
 
 ## Naming Conventions
 
-| Element | Convention | Example |
-|---|---|---|
-| Workflow `name:` | Title Case | `Reusable PR Checks` |
-| Job id | kebab-case | `test-and-build` |
-| Step `name:` | Sentence case, verb-led | `configure git`, `version packages with Lerna` |
-| Input key | kebab-case | `node-version`, `use-lerna` |
-| Secret key | kebab-case | `npm-token`, `github-token` |
-| Env var | UPPER_SNAKE_CASE | `NODE_AUTH_TOKEN`, `HUSKY` |
-| Step `id:` | kebab-case | `fetch-short-sha`, `check` |
+| Element          | Convention              | Example                                        |
+| ---------------- | ----------------------- | ---------------------------------------------- |
+| Workflow `name:` | Title Case              | `Reusable PR Checks`                           |
+| Job id           | kebab-case              | `test-and-build`                               |
+| Step `name:`     | Sentence case, verb-led | `configure git`, `version packages with Lerna` |
+| Input key        | kebab-case              | `node-version`, `use-lerna`                    |
+| Secret key       | kebab-case              | `npm-token`, `github-token`                    |
+| Env var          | UPPER_SNAKE_CASE        | `NODE_AUTH_TOKEN`, `HUSKY`                     |
+| Step `id:`       | kebab-case              | `fetch-short-sha`, `check`                     |
 
 ## Inputs and Secrets
 
@@ -87,4 +87,3 @@ Conventions for authoring workflow files in this repository.
 - Place job-level `env:` only when the variable is needed by **all** steps in the job.
 - Prefer step-level `env:` otherwise to minimise scope.
 - Always set `HUSKY: 0` on any step that runs `npm version` or `npx lerna version` to prevent git hook interference.
-
