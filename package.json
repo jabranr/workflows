@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Reusable GitHub Actions workflows for JavaScript/Node.js projects.",
   "main": "AGENTS.md",
+  "type": "module",
   "directories": {
     "doc": "docs"
   },
@@ -23,8 +24,9 @@
     "name": "Jabran Rafique",
     "email": "hello@jabran.me"
   },
+  "prettier": "@jabraf/dev/prettier",
   "license": "MIT",
   "devDependencies": {
-    "@jabraf/dev": "^0.0.2"
+    "@jabraf/dev": "^0.0.3"
   }
 }
