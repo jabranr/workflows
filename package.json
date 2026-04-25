@@ -1,0 +1,32 @@
+{
+  "name": "workflows",
+  "version": "1.0.0",
+  "description": "Reusable GitHub Actions workflows for JavaScript/Node.js projects.",
+  "main": "AGENTS.md",
+  "type": "module",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "format:check": "prettier --check .",
+    "format": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@jabraf.github.com:jabranr/workflows.git"
+  },
+  "keywords": [
+    "workflows",
+    "github",
+    "actions"
+  ],
+  "author": {
+    "name": "Jabran Rafique",
+    "email": "hello@jabran.me"
+  },
+  "prettier": "@jabraf/dev/prettier",
+  "license": "MIT",
+  "devDependencies": {
+    "@jabraf/dev": "^0.0.3"
+  }
+}

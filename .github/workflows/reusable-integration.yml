@@ -1,0 +1,104 @@
+name: Reusable Integration Tests
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Node.js version to use'
+        required: false
+        type: number
+        default: 24
+      test-type:
+        description: 'Type of tests to run (functional, e2e, smoke, vr)'
+        required: false
+        type: string
+        default: functional
+      timeout-minutes:
+        description: 'Timeout in minutes'
+        required: false
+        type: number
+        default: 60
+      reports-retention-days:
+        description: 'Reports retention in days'
+        required: false
+        type: number
+        default: 7
+
+permissions:
+  contents: read
+
+jobs:
+  validate-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate test-type input
+        run: |
+          case "${{ inputs.test-type }}" in
+            functional|e2e|smoke|vr) ;;
+            *) echo "::error::Unsupported test-type: ${{ inputs.test-type }} (expected one of: functional, e2e, smoke, vr)"; exit 1 ;;
+          esac
+
+  functional:
+    needs: validate-inputs
+    if: ${{ inputs.test-type == 'functional' || inputs.test-type == 'vr' }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run ${{ inputs.test-type }} tests
+        env:
+          CI: true
+          TEST_ENV: 'functional'
+        run: npm run test:${{ inputs.test-type }}
+
+      - name: Save test reports
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-${{ inputs.test-type }}
+          path: playwright-report-${{ inputs.test-type }}/
+          retention-days: ${{ inputs.reports-retention-days }}
+
+  integration:
+    needs: validate-inputs
+    if: ${{ inputs.test-type == 'e2e' || inputs.test-type == 'smoke' }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run ${{ inputs.test-type }} tests
+        env:
+          CI: true
+        run: npm run test:${{ inputs.test-type }}
+
+      - name: Save test reports
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-${{ inputs.test-type }}
+          path: playwright-report-${{ inputs.test-type }}/
+          retention-days: ${{ inputs.reports-retention-days }}

@@ -34,7 +34,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run lint
-      - run: npm run format
+      - run: npm run format:check
       - run: npm run typecheck
 
   check-publish:
@@ -87,4 +87,3 @@ jobs:
           npm publish --tag ${{ inputs.pre-release-tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
-

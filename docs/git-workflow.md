@@ -23,13 +23,13 @@ All commits **must** follow the [Conventional Commits](https://www.conventionalc
 
 ### Allowed Types
 
-| Type | When to use |
-|---|---|
-| `feat` | A new workflow or new workflow input/output |
-| `fix` | A bug fix in an existing workflow |
-| `chore` | Maintenance (dependency bumps, CODEOWNERS, CI config) |
-| `docs` | Documentation only changes |
-| `refactor` | Restructuring with no behaviour change |
+| Type       | When to use                                           |
+| ---------- | ----------------------------------------------------- |
+| `feat`     | A new workflow or new workflow input/output           |
+| `fix`      | A bug fix in an existing workflow                     |
+| `chore`    | Maintenance (dependency bumps, CODEOWNERS, CI config) |
+| `docs`     | Documentation only changes                            |
+| `refactor` | Restructuring with no behaviour change                |
 
 ### Breaking Changes
 
@@ -67,6 +67,7 @@ fix: correct registry-url for scoped packages [publish]
 ```
 
 Rules:
+
 - `[publish]` is checked on the PR's `head.sha`, not the merge commit.
 - The pre-release version uses the short Git SHA as the `preid` (e.g., `1.2.3-abc1234.0`).
 - The dist-tag defaults to `rc`; override via the `pre-release-tag` input.
@@ -78,4 +79,3 @@ Tags are created automatically by the `reusable-npm-publish.yml` workflow on mer
 
 - Monorepo (Lerna): tags are created by `lerna version`.
 - Simple repo: `npm version` creates the tag; a subsequent `git push --tags` publishes it.
-
