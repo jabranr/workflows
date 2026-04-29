@@ -14,5 +14,5 @@ runs:
       with:
         github-token: ${{ inputs.github-token || github.token }}
         script: |
-          const waitForCloudflarePagesDeployment = require('${{ github.action_path }}/wait-cf-pages-deployment.js');
+          const waitForCloudflarePagesDeployment = require('${{ github.action_path }}/wait-cf-pages-deployment.cjs');
           await waitForCloudflarePagesDeployment({ github, context });

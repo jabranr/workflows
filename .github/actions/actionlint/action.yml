@@ -5,7 +5,7 @@ runs:
   steps:
     - name: Download actionlint
       id: get_actionlint
-      run: bash <(curl
+      run: bash <(curl -fsSL
         https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
       shell: bash
 
