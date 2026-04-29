@@ -10,14 +10,16 @@ How to add, modify, and test reusable workflows in this repository.
 │   ├── actionlint/
 │   │   └── action.yml          # Lint workflows with actionlint
 │   └── wait-cf-pages-deployment/
-│       └── action.yml          # Poll for a completed Cloudflare Pages check
+│       ├── action.yml                     # Composite action entrypoint
+│       └── wait-cf-pages-deployment.cjs  # Helper loaded by actions/github-script
 └── workflows/
+    ├── reusable-integration.yml
     ├── reusable-pr-checks.yml
     ├── reusable-npm-publish.yml
     └── reusable-lighthouse.yml
 ```
 
-Reusable workflows live under `.github/workflows/` and use `on: workflow_call:` as their sole trigger. Composite actions live under `.github/actions/` and use `runs: using: 'composite'`.
+Reusable workflows live under `.github/workflows/` and use `on: workflow_call:` as their sole trigger. Composite actions live under `.github/actions/`, use `runs: using: 'composite'`, and may include helper files alongside `action.yml`.
 
 ## Adding a New Workflow
 
@@ -121,6 +123,8 @@ steps:
 
 - Always pin to `@main`.
 - Composite actions accept no inputs and expose no secrets unless their `action.yml` declares them.
+- Keep helper files in the same action directory as `action.yml`.
+- Because this repository sets `"type": "module"` in `package.json`, helper files loaded via `require()` from `actions/github-script` must use the `.cjs` extension.
 
 ## Referencing a Workflow from a Caller Repository
 

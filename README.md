@@ -130,7 +130,7 @@ Reusable composite actions live under `.github/actions/`. Reference them in a st
 
 ### `actions/actionlint`
 
-Downloads and runs [`actionlint`](https://github.com/rhysd/actionlint) against all workflow files in the repository. Place this step immediately after `actions/checkout`.
+Downloads the official [`actionlint`](https://github.com/rhysd/actionlint) installer with `curl -fsSL` and runs it against all workflow files in the repository. Place this step immediately after `actions/checkout`.
 
 **Usage**
 
@@ -146,9 +146,11 @@ No inputs or secrets.
 
 ### `actions/wait-cf-pages-deployment`
 
-Polls the GitHub Checks API until the **Cloudflare Pages** check run on the current commit (`context.sha`) reaches a `completed` state. Retries every 15 seconds for up to 2 minutes, then throws if the check has not completed or if it fails.
+Polls the GitHub Checks API until the **Cloudflare Pages** check run for the current ref (`context.payload.after || context.sha`) reaches a `completed` state. Retries every 15 seconds for up to 2 minutes, then throws if the check has not completed or if it fails.
 
 Use this after triggering a Cloudflare Pages deployment to block subsequent steps (e.g. a Lighthouse audit) until the deployment is confirmed successful.
+
+Internally, the action loads a bundled CommonJS helper (`wait-cf-pages-deployment.cjs`) via `actions/github-script`, which keeps it compatible with repositories that set `"type": "module"`.
 
 **Usage**
 

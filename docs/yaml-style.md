@@ -76,6 +76,8 @@ Conventions for authoring workflow files in this repository.
       npm version $BUMP
   ```
 
+- When downloading a remote script, prefer `curl -fsSL` (for example before piping into `bash`) so HTTP errors fail fast and successful downloads stay quiet.
+
 - Write to `$GITHUB_OUTPUT` using the `>>` append operator, never `set-output`.
 
   ```yaml
