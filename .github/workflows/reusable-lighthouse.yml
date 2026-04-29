@@ -27,7 +27,7 @@ jobs:
       - name: Run Lighthouse
         uses: foo-software/lighthouse-check-action@master
         with:
-          urls: '${{ inputs.urls }}'
+          urls: ${{ inputs.urls }}
           gitAuthor: ${{ github.actor }}
           gitBranch: ${{ github.ref }}
           gitHubAccessToken: ${{ secrets.github-token }}
