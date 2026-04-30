@@ -7,10 +7,13 @@ on:
         description: 'Comma-separated list of URLs to audit'
         type: string
         required: true
+      save-artifact:
+        description: 'Save the Lighthouse report as an artifact'
+        type: boolean
+        required: false
+        default: false
     secrets:
-      github-token:
-        description: 'GitHub token used to post Lighthouse results as a commit status'
-        required: true
+      inherit: true
 
 permissions:
   contents: read
@@ -19,21 +22,21 @@ jobs:
   lighthouse:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Create artifacts directory
-        run: mkdir -p "${{ github.workspace }}/tmp/artifacts"
-
       - name: Run Lighthouse
         uses: foo-software/lighthouse-check-action@master
         with:
           urls: ${{ inputs.urls }}
           gitAuthor: ${{ github.actor }}
           gitBranch: ${{ github.ref }}
-          gitHubAccessToken: ${{ secrets.github-token }}
+          gitHubAccessToken: ${{ secrets.GITHUB_TOKEN }}
           outputDirectory: '${{ github.workspace }}/tmp/artifacts'
 
+      - name: Create artifacts directory
+        if: ${{ inputs.save-artifact }}
+        run: mkdir -p "${{ github.workspace }}/tmp/artifacts"
+
       - name: Upload Lighthouse artifacts
+        if: ${{ inputs.save-artifact }}
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-results
