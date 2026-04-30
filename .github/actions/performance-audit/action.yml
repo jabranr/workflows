@@ -1,0 +1,39 @@
+name: Performance audit
+description: Run a performance audit using Lighthouse
+
+inputs:
+  urls:
+    description: 'Comma-separated list of URLs to audit'
+    required: true
+  save-artifact:
+    description: 'Save the Lighthouse report as an artifact'
+    required: false
+    default: 'false'
+  github-token:
+    description: 'GitHub token used to post Lighthouse results as a commit status'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Create artifacts directory
+      if: ${{ inputs.save-artifact == 'true' }}
+      shell: bash
+      run: mkdir -p "${{ github.workspace }}/tmp/artifacts"
+
+    - name: Run Lighthouse
+      uses: foo-software/lighthouse-check-action@master
+      with:
+        urls: ${{ inputs.urls }}
+        gitAuthor: ${{ github.actor }}
+        gitBranch: ${{ github.ref }}
+        gitHubAccessToken: ${{ inputs.github-token }}
+        outputDirectory: '${{ github.workspace }}/tmp/artifacts'
+        prCommentEnabled: ${{ inputs.save-artifact == 'false' && github.event_name == 'pull_request' }}
+
+    - name: Upload Lighthouse artifacts
+      if: ${{ inputs.save-artifact == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: lighthouse-results
+        path: '${{ github.workspace }}/tmp/artifacts'
