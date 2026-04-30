@@ -7,6 +7,11 @@ on:
         description: 'Comma-separated list of URLs to audit'
         type: string
         required: true
+      save-artifact:
+        description: 'Save the Lighthouse report as an artifact'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -14,7 +19,7 @@ permissions:
 jobs:
   lighthouse-pr:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: ${{ !inputs.save-artifact }}
     steps:
       - name: Run Lighthouse
         uses: foo-software/lighthouse-check-action@master
@@ -23,11 +28,11 @@ jobs:
           gitAuthor: ${{ github.actor }}
           gitBranch: ${{ github.ref }}
           gitHubAccessToken: ${{ secrets.GITHUB_TOKEN }}
-          # outputDirectory: '${{ github.workspace }}/tmp/artifacts'
+          prCommentEnabled: true
 
   lighthouse:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: ${{ inputs.save-artifact }}
     steps:
       - name: Create artifacts directory
         run: mkdir -p "${{ github.workspace }}/tmp/artifacts"
