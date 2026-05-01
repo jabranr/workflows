@@ -8,15 +8,16 @@ How to add, modify, and test reusable workflows in this repository.
 .github/
 ├── actions/
 │   ├── actionlint/
-│   │   └── action.yml          # Lint workflows with actionlint
+│   │   └── action.yml                    # Lint workflows with actionlint
+│   ├── performance-audit/
+│   │   └── action.yml                    # Lighthouse performance audit
 │   └── wait-cf-pages-deployment/
-│       ├── action.yml                     # Composite action entrypoint
+│       ├── action.yml                    # Composite action entrypoint
 │       └── wait-cf-pages-deployment.cjs  # Helper loaded by actions/github-script
 └── workflows/
     ├── reusable-integration.yml
     ├── reusable-pr-checks.yml
-    ├── reusable-npm-publish.yml
-    └── reusable-lighthouse.yml
+    └── reusable-npm-publish.yml
 ```
 
 Reusable workflows live under `.github/workflows/` and use `on: workflow_call:` as their sole trigger. Composite actions live under `.github/actions/`, use `runs: using: 'composite'`, and may include helper files alongside `action.yml`.

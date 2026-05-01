@@ -87,40 +87,39 @@ jobs:
 
 ---
 
-### `reusable-lighthouse.yml`
+### `reusable-integration.yml`
 
-Runs a [Lighthouse](https://github.com/foo-software/lighthouse-check-action) performance audit against one or more URLs and uploads the HTML reports as a workflow artifact. Intended to run after a deployment (e.g. to Cloudflare Pages).
+Runs Playwright-based integration tests (`functional`, `e2e`, `smoke`, or `vr`) and uploads the Playwright report as a workflow artifact.
 
 **Usage**
 
 ```yaml
 jobs:
-  lighthouse:
-    uses: jabranr/workflows/.github/workflows/reusable-lighthouse.yml@main
+  integration:
+    uses: jabranr/workflows/.github/workflows/reusable-integration.yml@main
     with:
-      urls: 'https://my-app.pages.dev,https://my-app.pages.dev/login'
-    secrets:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+      node-version: 24 # optional, default: 24
+      test-type: e2e # optional, default: functional
+      timeout-minutes: 60 # optional, default: 60
+      reports-retention-days: 7 # optional, default: 7
 ```
 
 **Inputs**
 
-| Input  | Type   | Default | Description                           |
-| ------ | ------ | ------- | ------------------------------------- |
-| `urls` | string | —       | Comma-separated list of URLs to audit |
+| Input                    | Type   | Default      | Description                                               |
+| ------------------------ | ------ | ------------ | --------------------------------------------------------- |
+| `node-version`           | number | `24`         | Node.js version to use                                    |
+| `test-type`              | string | `functional` | Type of tests to run (`functional`, `e2e`, `smoke`, `vr`) |
+| `timeout-minutes`        | number | `60`         | Job timeout in minutes                                    |
+| `reports-retention-days` | number | `7`          | Number of days to retain the uploaded Playwright report   |
 
-**Secrets**
+**Jobs**
 
-| Secret         | Required | Description                                                     |
-| -------------- | -------- | --------------------------------------------------------------- |
-| `github-token` | Yes      | GitHub token used to post Lighthouse results as a commit status |
+- **`validate-inputs`** — fails fast if `test-type` is not one of `functional`, `e2e`, `smoke`, `vr`
+- **`functional`** — runs when `test-type` is `functional` or `vr`; installs Playwright browsers and runs `npm run test:<test-type>` with `TEST_ENV=functional`
+- **`integration`** — runs when `test-type` is `e2e` or `smoke`; installs Playwright browsers and runs `npm run test:<test-type>`
 
-**Steps**
-
-1. Checks out the repository
-2. Creates the artifacts output directory
-3. Runs Lighthouse against each URL in `urls`
-4. Uploads HTML reports to a `lighthouse-results` workflow artifact
+Both job variants upload a `playwright-report-<test-type>` artifact unless the workflow is cancelled.
 
 ## Composite Actions
 
@@ -166,6 +165,29 @@ steps:
 | `github-token` | No       | GitHub token used to authenticate Checks API calls. Defaults to `github.token` when omitted. |
 
 Requires the workflow to have `checks: read` permission (GitHub's default for `GITHUB_TOKEN`).
+
+---
+
+### `actions/performance-audit`
+
+Runs a [Lighthouse](https://github.com/foo-software/lighthouse-check-action) performance audit against one or more URLs. On `pull_request` events the results are posted as a PR comment; on `push` events the HTML reports are uploaded as a `lighthouse-results` workflow artifact. Intended to run after a deployment (e.g. to Cloudflare Pages).
+
+**Usage**
+
+```yaml
+steps:
+  - uses: jabranr/workflows/.github/actions/performance-audit@main
+    with:
+      urls: 'https://jabran.dev,https://jabran.dev/resume/'
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**Inputs**
+
+| Input          | Required | Description                                                     |
+| -------------- | -------- | --------------------------------------------------------------- |
+| `urls`         | Yes      | Comma-separated list of URLs to audit                           |
+| `github-token` | Yes      | GitHub token used to post Lighthouse results as a commit status |
 
 ---
 
