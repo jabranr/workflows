@@ -5,10 +5,6 @@ inputs:
   urls:
     description: 'Comma-separated list of URLs to audit'
     required: true
-  save-artifact:
-    description: 'Save the Lighthouse report as an artifact'
-    required: false
-    default: 'false'
   github-token:
     description: 'GitHub token used to post Lighthouse results as a commit status'
     required: true
@@ -28,10 +24,10 @@ runs:
         gitBranch: ${{ github.ref }}
         gitHubAccessToken: ${{ inputs.github-token }}
         outputDirectory: '${{ github.workspace }}/tmp/artifacts'
-        prCommentEnabled: ${{ inputs.save-artifact == 'false' && github.event_name == 'pull_request' }}
+        prCommentEnabled: ${{ github.event_name == 'pull_request' }}
 
     - name: Upload Lighthouse artifacts
-      if: ${{ inputs.save-artifact == 'true' }}
+      if: ${{ github.event_name == 'push' }}
       uses: actions/upload-artifact@v4
       with:
         name: lighthouse-results
