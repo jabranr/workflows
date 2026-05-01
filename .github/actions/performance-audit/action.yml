@@ -17,7 +17,6 @@ runs:
   using: 'composite'
   steps:
     - name: Create artifacts directory
-      if: ${{ inputs.save-artifact == 'true' }}
       shell: bash
       run: mkdir -p "${{ github.workspace }}/tmp/artifacts"
 
