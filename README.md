@@ -20,29 +20,41 @@ jobs:
       node-version: 24 # optional, default: 24
       use-lerna: true # optional, default: true
       pre-release-tag: rc # optional, default: rc
+      run-pre-release: true # optional, default: true
+      run-unit-test: true # optional, default: true
+      run-build: true # optional, default: true
+      run-lint: true # optional, default: true
+      run-format-check: true # optional, default: true
+      run-typecheck: true # optional, default: true
     secrets:
-      npm-token: ${{ secrets.NPM_TOKEN }} # optional, only needed for pre-release publishing
+      npm-token: ${{ secrets.NPM_TOKEN }} # required when run-pre-release is true
 ```
 
 **Inputs**
 
-| Input             | Type    | Default | Description                                                         |
-| ----------------- | ------- | ------- | ------------------------------------------------------------------- |
-| `node-version`    | number  | `24`    | Node.js version to use                                              |
-| `use-lerna`       | boolean | `true`  | Use Lerna for pre-release publishing (set `false` for simple repos) |
-| `pre-release-tag` | string  | `rc`    | npm dist-tag used when publishing a pre-release                     |
+| Input              | Type    | Default | Description                                                                               |
+| ------------------ | ------- | ------- | ----------------------------------------------------------------------------------------- |
+| `node-version`     | number  | `24`    | Node.js version to use                                                                    |
+| `use-lerna`        | boolean | `true`  | Use Lerna for pre-release publishing (set `false` for simple repos)                       |
+| `pre-release-tag`  | string  | `rc`    | npm dist-tag used when publishing a pre-release                                           |
+| `run-pre-release`  | boolean | `true`  | Run the `check-publish` and `pre-release` jobs (set `false` to skip pre-release entirely) |
+| `run-unit-test`    | boolean | `true`  | Run `npm test`                                                                            |
+| `run-build`        | boolean | `true`  | Run `npm run build`                                                                       |
+| `run-lint`         | boolean | `true`  | Run `npm run lint`                                                                        |
+| `run-format-check` | boolean | `true`  | Run `npm run format:check`                                                                |
+| `run-typecheck`    | boolean | `true`  | Run `npm run typecheck`                                                                   |
 
 **Secrets**
 
-| Secret      | Required | Description                                   |
-| ----------- | -------- | --------------------------------------------- |
-| `npm-token` | No       | NPM token for publishing pre-release packages |
+| Secret      | Required                       | Description                                                                                                  |
+| ----------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `npm-token` | When `run-pre-release` is true | NPM token for publishing pre-release packages. The `check-publish` job fails fast if it is missing or empty. |
 
 **Jobs**
 
-- **`test-and-build`** — runs `npm ci`, `npm test`, `npm run build`, `npm run lint`, `npm run format`, `npm run typecheck`
-- **`check-publish`** — inspects the latest commit message; sets `should_publish=true` if it contains `[publish]`
-- **`pre-release`** — publishes a pre-release version to npm (runs only when `should_publish=true`)
+- **`test-and-build`** — runs `npm ci`, then `npm test`, `npm run build`, `npm run lint`, `npm run format:check`, and `npm run typecheck`. Each script step is gated by its matching `run-*` input and skipped when set to `false`.
+- **`check-publish`** — runs only when `run-pre-release` is `true`. Validates that `npm-token` is set, then inspects the PR head commit message and sets `should_publish=true` if it contains `[publish]`.
+- **`pre-release`** — publishes a pre-release version to npm. Runs only when `run-pre-release` is `true` **and** `check-publish` set `should_publish=true`.
 
 ---
 
@@ -59,6 +71,11 @@ jobs:
     with:
       node-version: 24 # optional, default: 24
       use-lerna: true # optional, default: true
+      run-unit-test: true # optional, default: true
+      run-build: true # optional, default: true
+      run-lint: true # optional, default: true
+      run-format-check: true # optional, default: true
+      run-typecheck: true # optional, default: true
     secrets:
       npm-token: ${{ secrets.NPM_TOKEN }}
       github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -66,10 +83,15 @@ jobs:
 
 **Inputs**
 
-| Input          | Type    | Default | Description                                                            |
-| -------------- | ------- | ------- | ---------------------------------------------------------------------- |
-| `node-version` | number  | `24`    | Node.js version to use                                                 |
-| `use-lerna`    | boolean | `true`  | Use Lerna for versioning and publishing (set `false` for simple repos) |
+| Input              | Type    | Default | Description                                                            |
+| ------------------ | ------- | ------- | ---------------------------------------------------------------------- |
+| `node-version`     | number  | `24`    | Node.js version to use                                                 |
+| `use-lerna`        | boolean | `true`  | Use Lerna for versioning and publishing (set `false` for simple repos) |
+| `run-unit-test`    | boolean | `true`  | Run `npm test`                                                         |
+| `run-build`        | boolean | `true`  | Run `npm run build`                                                    |
+| `run-lint`         | boolean | `true`  | Run `npm run lint`                                                     |
+| `run-format-check` | boolean | `true`  | Run `npm run format:check`                                             |
+| `run-typecheck`    | boolean | `true`  | Run `npm run typecheck`                                                |
 
 **Secrets**
 
@@ -80,10 +102,14 @@ jobs:
 
 **Steps**
 
-1. Checks out the repo with full history (`fetch-depth: 0`)
-2. Runs `npm ci`, `npm test`, `npm run build`, `npm run lint`, `npm run format`, `npm run typecheck`
-3. **Monorepo (Lerna):** versions packages with conventional commits, then publishes via `lerna publish from-git`
-4. **Simple repo:** bumps the version with `conventional-recommended-bump`, pushes the commit and tag, then publishes via `npm publish`
+1. Checks out the repo with full history (`fetch-depth: 0`) using `github-token`
+2. Lints workflow files with the bundled `actionlint` composite action
+3. Runs `npm ci`, then `npm test`, `npm run build`, `npm run lint`, `npm run format:check`, and `npm run typecheck` — each script step is gated by its matching `run-*` input and skipped when set to `false`
+4. Configures the `github-actions[bot]` git identity (and marks the workspace as a safe directory)
+5. **Monorepo (Lerna):** versions packages with conventional commits, then publishes via `lerna publish from-git`
+6. **Simple repo:** bumps the version with `conventional-recommended-bump`, pushes the commit and tag, then publishes via `npm publish`
+
+`HUSKY: 0` is set at the job level so it applies to every step that runs `npm version` or `npx lerna version`.
 
 ---
 

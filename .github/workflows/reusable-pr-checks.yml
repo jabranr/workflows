@@ -15,6 +15,30 @@ on:
         description: 'npm dist-tag used when publishing a pre-release'
         type: string
         default: rc
+      run-pre-release:
+        description: 'Run pre-release'
+        type: boolean
+        default: true
+      run-unit-test:
+        description: 'Run unit tests'
+        type: boolean
+        default: true
+      run-build:
+        description: 'Run build'
+        type: boolean
+        default: true
+      run-lint:
+        description: 'Run lint'
+        type: boolean
+        default: true
+      run-format-check:
+        description: 'Run format check'
+        type: boolean
+        default: true
+      run-typecheck:
+        description: 'Run typecheck'
+        type: boolean
+        default: true
     secrets:
       npm-token:
         description: 'NPM token for publishing pre-release packages'
@@ -25,23 +49,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: jabranr/workflows/.github/actions/actionlint@main
+
+      - name: Lint workflows
+        uses: jabranr/workflows/.github/actions/actionlint@main
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: 'npm'
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: npm run lint
-      - run: npm run format:check
-      - run: npm run typecheck
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        if: ${{ inputs.run-unit-test }}
+        run: npm test
+
+      - name: Run build
+        if: ${{ inputs.run-build }}
+        run: npm run build
+
+      - name: Run lint
+        if: ${{ inputs.run-lint }}
+        run: npm run lint
+
+      - name: Run format check
+        if: ${{ inputs.run-format-check }}
+        run: npm run format:check
+
+      - name: Run typecheck
+        if: ${{ inputs.run-typecheck }}
+        run: npm run typecheck
 
   check-publish:
+    if: ${{ inputs.run-pre-release }}
     runs-on: ubuntu-latest
     outputs:
       should_publish: ${{ steps.check.outputs.should_publish }}
     steps:
+      - name: Validate required inputs and secrets
+        run: |
+          if [ -z "${{ secrets.npm-token }}" ]; then
+            echo "secrets.npm-token is required when run-pre-release is true"
+            exit 1
+          fi
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -59,7 +110,7 @@ jobs:
 
   pre-release:
     needs: [test-and-build, check-publish]
-    if: needs.check-publish.outputs.should_publish == 'true'
+    if: needs.check-publish.outputs.should_publish == 'true' && inputs.run-pre-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

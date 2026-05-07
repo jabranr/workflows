@@ -62,30 +62,52 @@ jobs:
 
 ## Standard CI Step Order
 
-Every workflow that runs tests must use this **exact step order**:
+Every workflow that runs tests must use this **exact step order**, with each script step given an explicit `name:` and gated by a matching `run-*` boolean input that defaults to `true`:
 
 ```yaml
-- run: npm ci
-- run: npm test
-- run: npm run build
-- run: npm run lint
-- run: npm run format:check
-- run: npm run typecheck
+- name: Install dependencies
+  run: npm ci
+
+- name: Run unit tests
+  if: ${{ inputs.run-unit-test }}
+  run: npm test
+
+- name: Run build
+  if: ${{ inputs.run-build }}
+  run: npm run build
+
+- name: Run lint
+  if: ${{ inputs.run-lint }}
+  run: npm run lint
+
+- name: Run format check
+  if: ${{ inputs.run-format-check }}
+  run: npm run format:check
+
+- name: Run typecheck
+  if: ${{ inputs.run-typecheck }}
+  run: npm run typecheck
 ```
 
-Do not skip or reorder these steps. Callers rely on them running in this sequence.
+Rules:
+
+- Do not reorder these steps. Callers rely on them running in this sequence.
+- `npm ci` is always run and is **not** gated by an input.
+- Each gated step uses an input named `run-<step>` (e.g. `run-unit-test`, `run-format-check`) of type `boolean` with `default: true`, so callers opt **out** rather than opt in.
+- The step `name:` describes the action (`Run unit tests`, `Run build`, …); do not reuse the same name for multiple steps.
 
 ## npm Publishing Requirements
 
 When a workflow step publishes to npm, these conditions must all be met:
 
-| Requirement                                                          | Reason                                             |
-| -------------------------------------------------------------------- | -------------------------------------------------- |
-| `registry-url: https://registry.npmjs.org/` in `setup-node`          | Required for `NODE_AUTH_TOKEN` to be picked up     |
-| `env: NODE_AUTH_TOKEN: ${{ secrets.npm-token }}` on the publish step | Auth for the npm registry                          |
-| `fetch-depth: 0` in `checkout`                                       | Required for conventional-commit history traversal |
-| `token: ${{ secrets.github-token }}` in `checkout`                   | Required when the job pushes commits or tags       |
-| `HUSKY: 0` on versioning steps                                       | Prevents git hooks from blocking version commits   |
+| Requirement                                                          | Reason                                                                                                                                                                         |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `registry-url: https://registry.npmjs.org/` in `setup-node`          | Required for `NODE_AUTH_TOKEN` to be picked up                                                                                                                                 |
+| `env: NODE_AUTH_TOKEN: ${{ secrets.npm-token }}` on the publish step | Auth for the npm registry                                                                                                                                                      |
+| `fetch-depth: 0` in `checkout`                                       | Required for conventional-commit history traversal                                                                                                                             |
+| `token: ${{ secrets.github-token }}` in `checkout`                   | Required when the job pushes commits or tags                                                                                                                                   |
+| `HUSKY: 0` covering every versioning step                            | Prevents git hooks from blocking version commits — set at job level when more than one step in the job runs `npm version` or `npx lerna version`, otherwise step-level is fine |
+| `git config --global --add safe.directory '*'` before versioning     | Avoids `dubious ownership` errors in containers/runners when git mutates the workspace                                                                                         |
 
 ## Supporting Both Monorepo and Simple Repo
 

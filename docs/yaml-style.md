@@ -44,7 +44,9 @@ Conventions for authoring workflow files in this repository.
 
 ## Inputs and Secrets
 
-- Every input must have a `description:`, `type:`, and `default:` (unless no sensible default exists).
+- Every input must have a `description:` and `type:`.
+- Provide a `default:` whenever a sensible one exists. Omit `required:` on inputs with a `default:` — the default already makes them optional and `required: false` is redundant noise.
+- Boolean feature toggles (e.g. `run-unit-test`, `run-pre-release`) must default to `true` so callers opt **out** rather than opt in. Name them `run-<thing>`.
 - Every secret must have a `description:` and explicit `required: true` or `required: false`.
 
   ```yaml
@@ -53,6 +55,10 @@ Conventions for authoring workflow files in this repository.
       description: 'Node.js version to use'
       type: number
       default: 24
+    run-unit-test:
+      description: 'Run unit tests'
+      type: boolean
+      default: true
   secrets:
     npm-token:
       description: 'NPM token for publishing packages'
@@ -86,6 +92,6 @@ Conventions for authoring workflow files in this repository.
 
 ## `env:` Blocks
 
-- Place job-level `env:` only when the variable is needed by **all** steps in the job.
+- Place job-level `env:` only when the variable is needed by **all** (or most) steps in the job.
 - Prefer step-level `env:` otherwise to minimise scope.
-- Always set `HUSKY: 0` on any step that runs `npm version` or `npx lerna version` to prevent git hook interference.
+- `HUSKY: 0` must cover every step that runs `npm version` or `npx lerna version`. Set it at the job level when multiple such steps exist (e.g. `reusable-npm-publish.yml`); set it at the step level when only one step needs it.

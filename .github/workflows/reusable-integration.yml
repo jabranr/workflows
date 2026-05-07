@@ -5,22 +5,18 @@ on:
     inputs:
       node-version:
         description: 'Node.js version to use'
-        required: false
         type: number
         default: 24
       test-type:
         description: 'Type of tests to run (functional, e2e, smoke, vr)'
-        required: false
         type: string
         default: functional
       timeout-minutes:
         description: 'Timeout in minutes'
-        required: false
         type: number
         default: 60
       reports-retention-days:
         description: 'Reports retention in days'
-        required: false
         type: number
         default: 7
 
