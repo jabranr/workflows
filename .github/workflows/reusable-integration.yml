@@ -26,7 +26,6 @@ permissions:
 jobs:
   integration:
     name: ${{ inputs.test-type }}
-    needs: validate-inputs
     timeout-minutes: ${{ inputs.timeout-minutes }}
     runs-on: ubuntu-latest
     steps:
