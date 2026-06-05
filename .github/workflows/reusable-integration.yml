@@ -6,7 +6,7 @@ on:
       node-version:
         description: 'Node.js version to use'
         type: string
-        default: '24.15.0'
+        default: '24.15.0' # @see https://github.com/microsoft/playwright/issues/40998
       test-type:
         description: 'Type of tests to run (functional, e2e, smoke, vr)'
         type: string
