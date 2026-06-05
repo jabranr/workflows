@@ -5,8 +5,8 @@ on:
     inputs:
       node-version:
         description: 'Node.js version to use'
-        type: number
-        default: 24
+        type: string
+        default: '24.15.0'
       test-type:
         description: 'Type of tests to run (functional, e2e, smoke, vr)'
         type: string
