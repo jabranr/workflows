@@ -171,7 +171,7 @@ No inputs or secrets.
 
 ### `actions/wait-cf-pages-deployment`
 
-Polls the GitHub Checks API until the **Cloudflare Pages** check run for the current ref reaches a `completed` state. The ref is resolved as `context.payload.pull_request?.head?.sha || context.payload.after || context.sha`, which targets the PR head commit on `pull_request` / `pull_request_target` events (Cloudflare Pages posts its check against the head, not the synthetic merge commit), the pushed commit on `push` events, and falls back to `context.sha` otherwise. Retries every 15 seconds for up to 2 minutes, then throws if the check has not completed or if it fails. If no Cloudflare Pages check is ever found, the action emits a `core.warning` and exits successfully.
+Polls the GitHub Checks API until the **Cloudflare Pages** check run for the current ref reaches a `completed` state. The ref is resolved as `context.payload.pull_request?.head?.sha || context.payload.after || context.sha`, which targets the PR head commit on `pull_request` / `pull_request_target` events (Cloudflare Pages posts its check against the head, not the synthetic merge commit), the pushed commit on `push` events, and falls back to `context.sha` otherwise. By default, retries every 15 seconds for up to 9 attempts (2 minutes), then throws if the check has not completed or if it fails. Both the polling interval and the number of attempts are configurable via the `interval-seconds` and `max-attempts` inputs. If no Cloudflare Pages check is ever found, the action emits a `core.warning` and exits successfully.
 
 Use this after triggering a Cloudflare Pages deployment to block subsequent steps (e.g. a Lighthouse audit) until the deployment is confirmed successful.
 
@@ -188,14 +188,18 @@ deployment-status:
     - name: Wait for Cloudflare Pages deployment
       uses: jabranr/workflows/.github/actions/wait-cf-pages-deployment@main
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }} # optional
+        max-attempts: 9 # optional, default: 9
+        interval-seconds: 15 # optional, default: 15
 ```
 
 **Inputs**
 
-| Input          | Required | Description                                                                                  |
-| -------------- | -------- | -------------------------------------------------------------------------------------------- |
-| `github-token` | No       | GitHub token used to authenticate Checks API calls. Defaults to `github.token` when omitted. |
+| Input              | Required | Default | Description                                                                                  |
+| ------------------ | -------- | ------- | -------------------------------------------------------------------------------------------- |
+| `github-token`     | No       | —       | GitHub token used to authenticate Checks API calls. Defaults to `github.token` when omitted. |
+| `max-attempts`     | No       | `9`     | Maximum number of times to poll the Checks API before giving up.                             |
+| `interval-seconds` | No       | `15`    | Number of seconds to wait between Checks API polls.                                          |
 
 Requires the workflow to have `checks: read` permission (GitHub's default for `GITHUB_TOKEN`).
 
