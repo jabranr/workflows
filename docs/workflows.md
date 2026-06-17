@@ -68,13 +68,13 @@ Every workflow that runs tests must use this **exact step order**, with each scr
 - name: Install dependencies
   run: npm ci
 
-- name: Run unit tests
-  if: ${{ inputs.run-unit-test }}
-  run: npm test
-
 - name: Run build
   if: ${{ inputs.run-build }}
   run: npm run build
+
+- name: Run unit tests
+  if: ${{ inputs.run-unit-test }}
+  run: npm test
 
 - name: Run lint
   if: ${{ inputs.run-lint }}
