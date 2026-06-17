@@ -171,7 +171,7 @@ No inputs or secrets.
 
 ### `actions/wait-cf-pages-deployment`
 
-Polls the GitHub Checks API until the **Cloudflare Pages** check run for the current ref (`context.payload.after || context.sha`) reaches a `completed` state. Retries every 15 seconds for up to 2 minutes, then throws if the check has not completed or if it fails.
+Polls the GitHub Checks API until the **Cloudflare Pages** check run for the current ref reaches a `completed` state. The ref is resolved as `context.payload.pull_request?.head?.sha || context.payload.after || context.sha`, which targets the PR head commit on `pull_request` / `pull_request_target` events (Cloudflare Pages posts its check against the head, not the synthetic merge commit), the pushed commit on `push` events, and falls back to `context.sha` otherwise. Retries every 15 seconds for up to 2 minutes, then throws if the check has not completed or if it fails. If no Cloudflare Pages check is ever found, the action emits a `core.warning` and exits successfully.
 
 Use this after triggering a Cloudflare Pages deployment to block subsequent steps (e.g. a Lighthouse audit) until the deployment is confirmed successful.
 
