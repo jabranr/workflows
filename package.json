@@ -9,7 +9,8 @@
   },
   "scripts": {
     "format:check": "prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "node --test .github/actions/**/*.test.cjs"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,6 @@
   "prettier": "@jabraf/dev/prettier",
   "license": "MIT",
   "devDependencies": {
-    "@jabraf/dev": "^0.0.3"
+    "@jabraf/dev": "^0.1.1"
   }
 }
