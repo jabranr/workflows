@@ -15,11 +15,11 @@ on:
         description: 'Optional container image to run the job in. Image must include git. Leave empty to run directly on the runner.'
         type: string
         default: ''
-      run-setup-node:
+      run-node-setup:
         description: 'Whether to run actions/setup-node. Set false when the container image already provides Node and npm; node-version is then ignored.'
         type: boolean
         default: true
-      run-playwright-install:
+      run-playwright-setup:
         description: 'Whether to detect the Playwright version, cache, and install browsers. Set false when the container image already ships with Playwright browsers.'
         type: boolean
         default: true
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        if: ${{ inputs.run-setup-node }}
+        if: ${{ inputs.run-node-setup }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
@@ -62,14 +62,14 @@ jobs:
         run: npm ci
 
       - name: Get Playwright version
-        if: ${{ inputs.run-playwright-install }}
+        if: ${{ inputs.run-playwright-setup }}
         id: playwright-version
         run: |
           VERSION=$(node -p "require('@playwright/test/package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browsers
-        if: ${{ inputs.run-playwright-install }}
+        if: ${{ inputs.run-playwright-setup }}
         id: playwright-cache
         uses: actions/cache@v4
         with:
@@ -77,7 +77,7 @@ jobs:
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browsers
-        if: ${{ inputs.run-playwright-install }}
+        if: ${{ inputs.run-playwright-setup }}
         timeout-minutes: 10
         run: |
           if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = 'true' ]; then

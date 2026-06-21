@@ -153,7 +153,14 @@ Typical container combinations:
 
 **Jobs**
 
-- **`integration`** — single job named after `test-type`. The first step fails fast if `test-type` is not one of `functional`, `e2e`, `smoke`, `vr`. It then installs dependencies, caches and installs Playwright's Chromium browser, runs `npm run test:<test-type>` with `CI=true`, and uploads a `playwright-report-<test-type>` artifact (path `playwright-report-<test-type>/`) unless the workflow is cancelled.
+- **`integration`** — single job named after `test-type`, optionally running inside `container-image`. Step order:
+  1. **Validate test-type input** — fails fast if `test-type` is not one of `functional`, `e2e`, `smoke`, `vr`.
+  2. **`actions/checkout`**.
+  3. **Setup Node.js** — runs `actions/setup-node@v4` with the npm cache. Skipped when `run-setup-node` is `false`.
+  4. **Install dependencies** — `npm ci`.
+  5. **Get Playwright version**, **Cache Playwright browsers**, **Install Playwright browsers** — detect the Playwright version, restore the cache keyed on runner OS + version, then `npx playwright install --with-deps chromium` (or `install-deps` on cache hit). All three skipped when `run-playwright-install` is `false`.
+  6. **Run `<test-type>` tests** — `npm run test:<test-type>` with `CI=true`.
+  7. **Save test reports** — uploads the `playwright-report-<test-type>/` directory as a `playwright-report-<test-type>` artifact unless the workflow is cancelled.
 
 ## Composite Actions
 
