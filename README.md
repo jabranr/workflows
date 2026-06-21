@@ -126,26 +126,34 @@ jobs:
     with:
       node-version: 24 # optional, default: 24
       test-type: e2e # optional, default: functional
+      container-image: '' # optional, default: '' (no container)
+      run-setup-node: true # optional, default: true
+      run-playwright-install: true # optional, default: true
       timeout-minutes: 60 # optional, default: 60
       reports-retention-days: 7 # optional, default: 7
 ```
 
 **Inputs**
 
-| Input                    | Type   | Default      | Description                                               |
-| ------------------------ | ------ | ------------ | --------------------------------------------------------- |
-| `node-version`           | number | `24`         | Node.js version to use                                    |
-| `test-type`              | string | `functional` | Type of tests to run (`functional`, `e2e`, `smoke`, `vr`) |
-| `timeout-minutes`        | number | `60`         | Job timeout in minutes                                    |
-| `reports-retention-days` | number | `7`          | Number of days to retain the uploaded Playwright report   |
+| Input                    | Type    | Default      | Description                                                                                |
+| ------------------------ | ------- | ------------ | ------------------------------------------------------------------------------------------ |
+| `node-version`           | number  | `24`         | Node.js version to use (ignored when `run-setup-node` is `false`)                          |
+| `test-type`              | string  | `functional` | Type of tests to run (`functional`, `e2e`, `smoke`, `vr`)                                  |
+| `container-image`        | string  | `''`         | Optional container image to run the job in (must include `git`)                            |
+| `run-setup-node`         | boolean | `true`       | Run `actions/setup-node`. Set `false` when the container image already provides Node + npm |
+| `run-playwright-install` | boolean | `true`       | Detect Playwright version, cache, and install browsers. Set `false` for Playwright images  |
+| `timeout-minutes`        | number  | `60`         | Job timeout in minutes                                                                     |
+| `reports-retention-days` | number  | `7`          | Number of days to retain the uploaded Playwright report                                    |
+
+Typical container combinations:
+
+- **Bare runner** (default): leave `container-image` empty; both `run-*` toggles stay `true`.
+- **Node-only image** (e.g. `node:24-bookworm`): set `container-image` and `run-setup-node: false`.
+- **Playwright image** (e.g. `mcr.microsoft.com/playwright:v1.55.0-noble`): set `container-image`, `run-setup-node: false`, and `run-playwright-install: false`.
 
 **Jobs**
 
-- **`validate-inputs`** — fails fast if `test-type` is not one of `functional`, `e2e`, `smoke`, `vr`
-- **`functional`** — runs when `test-type` is `functional` or `vr`; installs Playwright browsers and runs `npm run test:<test-type>` with `TEST_ENV=functional`
-- **`integration`** — runs when `test-type` is `e2e` or `smoke`; installs Playwright browsers and runs `npm run test:<test-type>`
-
-Both job variants upload a `playwright-report-<test-type>` artifact unless the workflow is cancelled.
+- **`integration`** — single job named after `test-type`. The first step fails fast if `test-type` is not one of `functional`, `e2e`, `smoke`, `vr`. It then installs dependencies, caches and installs Playwright's Chromium browser, runs `npm run test:<test-type>` with `CI=true`, and uploads a `playwright-report-<test-type>` artifact (path `playwright-report-<test-type>/`) unless the workflow is cancelled.
 
 ## Composite Actions
 
