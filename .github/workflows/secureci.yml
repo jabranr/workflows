@@ -1,0 +1,23 @@
+name: SecureCI GHA
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# Least privilege by default; the publish jobs ask for what they need.
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # - name: Checkout code
+      #   uses: actions/checkout@v7
+
+      - name: SecureCI GHA
+        uses: secure-ci/cli@v0.2.0
