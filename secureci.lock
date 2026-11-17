@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "actions": {
+    "actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830": {
+      "commit": "0057852bfaa89a56745cba8c7296529d2fc39830"
+    },
+    "actions/checkout@11d5960a326750d5838078e36cf38b85af677262": {
+      "commit": "11d5960a326750d5838078e36cf38b85af677262"
+    },
+    "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020": {
+      "commit": "49933ea5288caeca8642d1e84afbd3f7d6820020"
+    },
+    "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02": {
+      "commit": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+    },
+    "jabranr/workflows/.github/actions/actionlint@ad3f06522e7b029504ab30aeb3fc958aab8b1bef": {
+      "commit": "ad3f06522e7b029504ab30aeb3fc958aab8b1bef"
+    },
+    "secure-ci/cli@4de5123f55633171aeca62a1377f8c20a63c975f": {
+      "commit": "4de5123f55633171aeca62a1377f8c20a63c975f"
+    }
+  }
+}

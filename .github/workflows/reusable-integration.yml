@@ -43,17 +43,19 @@ jobs:
     container: ${{ inputs.container-image || null }}
     steps:
       - name: Validate test-type input
+        env:
+          TEST_TYPE: ${{ inputs.test-type }}
         run: |
-          case "${{ inputs.test-type }}" in
+          case "$TEST_TYPE" in
             functional|e2e|smoke|vr) ;;
-            *) echo "::error::Unsupported test-type: ${{ inputs.test-type }} (expected one of: functional, e2e, smoke, vr)"; exit 1 ;;
+            *) echo "::error::Unsupported test-type: $TEST_TYPE (expected one of: functional, e2e, smoke, vr)"; exit 1 ;;
           esac
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
         if: ${{ inputs.run-node-setup }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: 'npm'
@@ -71,7 +73,7 @@ jobs:
       - name: Cache Playwright browsers
         if: ${{ inputs.run-playwright-setup }}
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
@@ -89,10 +91,11 @@ jobs:
       - name: Run ${{ inputs.test-type }} tests
         env:
           CI: true
-        run: npm run test:${{ inputs.test-type }}
+          TEST_TYPE: ${{ inputs.test-type }}
+        run: npm run "test:$TEST_TYPE"
 
       - name: Save test reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-${{ inputs.test-type }}

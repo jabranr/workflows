@@ -186,6 +186,15 @@ Validate YAML syntax with:
 npx js-yaml .github/workflows/reusable-pr-checks.yml
 ```
 
+Check workflows with SecureCI (syntax, template injection, token permissions, pinning and action drift), as CI does:
+
+```bash
+npm run ci:validate    # secureci validate .github/workflows/*.yml
+npm run ci:pin         # pin new or bumped action tags to commit SHAs
+npm run ci:inventory   # fail if a locked action ref has moved
+npm run ci:inventory:update   # rewrite secureci.lock after adding or bumping an action
+```
+
 Or install `actionlint` for full GitHub Actions semantic validation:
 
 ```bash

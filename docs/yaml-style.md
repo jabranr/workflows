@@ -18,16 +18,15 @@ Conventions for authoring workflow files in this repository.
 
 ## Action Pinning
 
-- Pin all `uses:` references to a **major version tag** (`@v4`), not `@latest` or a SHA.
+- Pin all `uses:` references to a **full commit SHA**, with the tag as a trailing comment. Never use a bare tag, `@latest` or a branch. `npm run ci:pin` rewrites tags to SHAs; `npm run ci:inventory:update` then refreshes `secureci.lock`, which CI checks for drift.
 
   ```yaml
   # ✅ correct
-  - uses: actions/checkout@v4
-  - uses: actions/setup-node@v4
+  - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
   # ❌ avoid
+  - uses: actions/checkout@v4
   - uses: actions/checkout@main
-  - uses: actions/checkout@abc1234def
   ```
 
 ## Naming Conventions
