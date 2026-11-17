@@ -31,7 +31,7 @@ docs/
 3. **Do not create version tags manually** — the publish workflow creates them.
 4. **`HUSKY: 0`** must be set on any step that runs `npm version` or `npx lerna version`.
 5. **`fetch-depth: 0`** is required on `checkout` steps that run conventional-commit tooling.
-6. **Pin actions to major version tags** (`@v4`), never `@latest` or a SHA.
+6. **Pin actions to a full commit SHA with the tag as a comment** (`@<sha> # v4`), never a bare tag or `@latest`. Run `npm run ci:pin` after adding or bumping an action, then `npm run ci:inventory:update` and commit `secureci.lock`.
 
 ## Detailed Guidance
 
