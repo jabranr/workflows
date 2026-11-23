@@ -18,6 +18,7 @@ jobs:
     uses: jabranr/workflows/.github/workflows/reusable-pr-checks.yml@main
     with:
       node-version: 24 # optional, default: 24
+      runner: ubuntu-24.04 # optional, default: ubuntu-24.04
       use-lerna: true # optional, default: true
       pre-release-tag: rc # optional, default: rc
       run-pre-release: true # optional, default: true
@@ -32,17 +33,18 @@ jobs:
 
 **Inputs**
 
-| Input              | Type    | Default | Description                                                                               |
-| ------------------ | ------- | ------- | ----------------------------------------------------------------------------------------- |
-| `node-version`     | number  | `24`    | Node.js version to use                                                                    |
-| `use-lerna`        | boolean | `true`  | Use Lerna for pre-release publishing (set `false` for simple repos)                       |
-| `pre-release-tag`  | string  | `rc`    | npm dist-tag used when publishing a pre-release                                           |
-| `run-pre-release`  | boolean | `true`  | Run the `check-publish` and `pre-release` jobs (set `false` to skip pre-release entirely) |
-| `run-unit-test`    | boolean | `true`  | Run `npm test`                                                                            |
-| `run-build`        | boolean | `true`  | Run `npm run build`                                                                       |
-| `run-lint`         | boolean | `true`  | Run `npm run lint`                                                                        |
-| `run-format-check` | boolean | `true`  | Run `npm run format:check`                                                                |
-| `run-typecheck`    | boolean | `true`  | Run `npm run typecheck`                                                                   |
+| Input              | Type    | Default        | Description                                                                                                       |
+| ------------------ | ------- | -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `node-version`     | number  | `24`           | Node.js version to use                                                                                            |
+| `runner`           | string  | `ubuntu-24.04` | Runner label for all three jobs (e.g. `ubuntu-24.04`, `ubuntu-latest`). See [Runner selection](#runner-selection) |
+| `use-lerna`        | boolean | `true`         | Use Lerna for pre-release publishing (set `false` for simple repos)                                               |
+| `pre-release-tag`  | string  | `rc`           | npm dist-tag used when publishing a pre-release                                                                   |
+| `run-pre-release`  | boolean | `true`         | Run the `check-publish` and `pre-release` jobs (set `false` to skip pre-release entirely)                         |
+| `run-unit-test`    | boolean | `true`         | Run `npm test`                                                                                                    |
+| `run-build`        | boolean | `true`         | Run `npm run build`                                                                                               |
+| `run-lint`         | boolean | `true`         | Run `npm run lint`                                                                                                |
+| `run-format-check` | boolean | `true`         | Run `npm run format:check`                                                                                        |
+| `run-typecheck`    | boolean | `true`         | Run `npm run typecheck`                                                                                           |
 
 **Secrets**
 
@@ -70,6 +72,7 @@ jobs:
     uses: jabranr/workflows/.github/workflows/reusable-npm-publish.yml@main
     with:
       node-version: 24 # optional, default: 24
+      runner: ubuntu-24.04 # optional, default: ubuntu-24.04
       use-lerna: true # optional, default: true
       run-unit-test: true # optional, default: true
       run-build: true # optional, default: true
@@ -83,15 +86,16 @@ jobs:
 
 **Inputs**
 
-| Input              | Type    | Default | Description                                                            |
-| ------------------ | ------- | ------- | ---------------------------------------------------------------------- |
-| `node-version`     | number  | `24`    | Node.js version to use                                                 |
-| `use-lerna`        | boolean | `true`  | Use Lerna for versioning and publishing (set `false` for simple repos) |
-| `run-unit-test`    | boolean | `true`  | Run `npm test`                                                         |
-| `run-build`        | boolean | `true`  | Run `npm run build`                                                    |
-| `run-lint`         | boolean | `true`  | Run `npm run lint`                                                     |
-| `run-format-check` | boolean | `true`  | Run `npm run format:check`                                             |
-| `run-typecheck`    | boolean | `true`  | Run `npm run typecheck`                                                |
+| Input              | Type    | Default        | Description                                                                                                |
+| ------------------ | ------- | -------------- | ---------------------------------------------------------------------------------------------------------- |
+| `node-version`     | number  | `24`           | Node.js version to use                                                                                     |
+| `runner`           | string  | `ubuntu-24.04` | Runner label for the job (e.g. `ubuntu-24.04`, `ubuntu-latest`). See [Runner selection](#runner-selection) |
+| `use-lerna`        | boolean | `true`         | Use Lerna for versioning and publishing (set `false` for simple repos)                                     |
+| `run-unit-test`    | boolean | `true`         | Run `npm test`                                                                                             |
+| `run-build`        | boolean | `true`         | Run `npm run build`                                                                                        |
+| `run-lint`         | boolean | `true`         | Run `npm run lint`                                                                                         |
+| `run-format-check` | boolean | `true`         | Run `npm run format:check`                                                                                 |
+| `run-typecheck`    | boolean | `true`         | Run `npm run typecheck`                                                                                    |
 
 **Secrets**
 
@@ -124,43 +128,76 @@ jobs:
   integration:
     uses: jabranr/workflows/.github/workflows/reusable-integration.yml@main
     with:
-      node-version: 24 # optional, default: 24
+      node-version: '24.15.0' # optional, default: '24.15.0'
+      runner: ubuntu-24.04 # optional, default: ubuntu-24.04
       test-type: e2e # optional, default: functional
       container-image: '' # optional, default: '' (no container)
-      run-setup-node: true # optional, default: true
-      run-playwright-install: true # optional, default: true
+      run-node-setup: true # optional, default: true
+      run-playwright-setup: true # optional, default: true
       timeout-minutes: 60 # optional, default: 60
       reports-retention-days: 7 # optional, default: 7
 ```
 
 **Inputs**
 
-| Input                    | Type    | Default      | Description                                                                                |
-| ------------------------ | ------- | ------------ | ------------------------------------------------------------------------------------------ |
-| `node-version`           | number  | `24`         | Node.js version to use (ignored when `run-setup-node` is `false`)                          |
-| `test-type`              | string  | `functional` | Type of tests to run (`functional`, `e2e`, `smoke`, `vr`)                                  |
-| `container-image`        | string  | `''`         | Optional container image to run the job in (must include `git`)                            |
-| `run-setup-node`         | boolean | `true`       | Run `actions/setup-node`. Set `false` when the container image already provides Node + npm |
-| `run-playwright-install` | boolean | `true`       | Detect Playwright version, cache, and install browsers. Set `false` for Playwright images  |
-| `timeout-minutes`        | number  | `60`         | Job timeout in minutes                                                                     |
-| `reports-retention-days` | number  | `7`          | Number of days to retain the uploaded Playwright report                                    |
+| Input                    | Type    | Default        | Description                                                                                                |
+| ------------------------ | ------- | -------------- | ---------------------------------------------------------------------------------------------------------- |
+| `node-version`           | string  | `'24.15.0'`    | Node.js version to use (ignored when `run-node-setup` is `false`). Pinned for [microsoft/playwright#40998] |
+| `runner`                 | string  | `ubuntu-24.04` | Runner label for the job (e.g. `ubuntu-24.04`, `ubuntu-latest`). See [Runner selection](#runner-selection) |
+| `test-type`              | string  | `functional`   | Type of tests to run (`functional`, `e2e`, `smoke`, `vr`)                                                  |
+| `container-image`        | string  | `''`           | Optional container image to run the job in (must include `git`)                                            |
+| `run-node-setup`         | boolean | `true`         | Run `actions/setup-node`. Set `false` when the container image already provides Node + npm                 |
+| `run-playwright-setup`   | boolean | `true`         | Detect Playwright version, cache, and install browsers. Set `false` for Playwright images                  |
+| `timeout-minutes`        | number  | `60`           | Job timeout in minutes                                                                                     |
+| `reports-retention-days` | number  | `7`            | Number of days to retain the uploaded Playwright report                                                    |
+
+[microsoft/playwright#40998]: https://github.com/microsoft/playwright/issues/40998
 
 Typical container combinations:
 
 - **Bare runner** (default): leave `container-image` empty; both `run-*` toggles stay `true`.
-- **Node-only image** (e.g. `node:24-bookworm`): set `container-image` and `run-setup-node: false`.
-- **Playwright image** (e.g. `mcr.microsoft.com/playwright:v1.55.0-noble`): set `container-image`, `run-setup-node: false`, and `run-playwright-install: false`.
+- **Node-only image** (e.g. `node:24-bookworm`): set `container-image` and `run-node-setup: false`.
+- **Playwright image** (e.g. `mcr.microsoft.com/playwright:v1.55.0-noble`): set `container-image`, `run-node-setup: false`, and `run-playwright-setup: false`.
+
+With `container-image` set, the browsers and system dependencies come from the image's OS, not the runner's, so `runner` only picks the host.
 
 **Jobs**
 
 - **`integration`** — single job named after `test-type`, optionally running inside `container-image`. Step order:
   1. **Validate test-type input** — fails fast if `test-type` is not one of `functional`, `e2e`, `smoke`, `vr`.
   2. **`actions/checkout`**.
-  3. **Setup Node.js** — runs `actions/setup-node@v4` with the npm cache. Skipped when `run-setup-node` is `false`.
+  3. **Setup Node.js** — runs `actions/setup-node@v4` with the npm cache. Skipped when `run-node-setup` is `false`.
   4. **Install dependencies** — `npm ci`.
-  5. **Get Playwright version**, **Cache Playwright browsers**, **Install Playwright browsers** — detect the Playwright version, restore the cache keyed on runner OS + version, then `npx playwright install --with-deps chromium` (or `install-deps` on cache hit). All three skipped when `run-playwright-install` is `false`.
+  5. **Get Playwright version**, **Cache Playwright browsers**, **Install Playwright browsers** — detect the installed `@playwright/test` version and the OS release (from `/etc/os-release`, e.g. `ubuntu24.04`), restore `~/.cache/ms-playwright` keyed on `playwright-<runner.os>-<runner.arch>-<os-release>-<version>` (e.g. `playwright-Linux-X64-ubuntu24.04-1.65.1`), then run `npx playwright install --with-deps chromium` on a cache miss, or `npx playwright install-deps` on a cache hit. All three are skipped when `run-playwright-setup` is `false`. If Playwright has no build for the OS, the step adds an error (or, for missing system dependencies, a warning) annotation explaining how to fix it. See [Runner selection](#runner-selection).
   6. **Run `<test-type>` tests** — `npm run test:<test-type>` with `CI=true`.
   7. **Save test reports** — uploads the `playwright-report-<test-type>/` directory as a `playwright-report-<test-type>` artifact unless the workflow is cancelled.
+
+---
+
+### Runner selection
+
+Every job in the reusable workflows runs on `${{ inputs.runner }}`, which defaults to **`ubuntu-24.04`**. Pass any runner label to override it:
+
+```yaml
+jobs:
+  functional-tests:
+    uses: jabranr/workflows/.github/workflows/reusable-integration.yml@main
+    with:
+      test-type: functional
+      runner: ubuntu-latest # opt in to the newest GitHub-hosted image
+```
+
+**Why the default is pinned.** The jobs used to run on `ubuntu-latest`, which by 2026-11-23 resolved to Ubuntu 26.04. Playwright only ships Ubuntu 26.04 browser builds from **1.61.0**, so any consumer on an older `@playwright/test` (e.g. 1.59.1) failed in **Install Playwright browsers** before a single test ran:
+
+```text
+BEWARE: your OS is not officially supported by Playwright; installing dependencies for ubuntu26.04-x64 as a fallback.
+Cannot install dependencies for ubuntu26.04-x64 with Playwright 1.59.1!
+Error: ERROR: Playwright does not support chromium on ubuntu26.04-x64
+```
+
+Pinning `ubuntu-24.04` keeps those consumers working. To move to a newer image, upgrade `@playwright/test` to a version that supports it (1.61.0 or newer for Ubuntu 26.04), then pass `runner: ubuntu-latest`.
+
+If you see `if [ "$CACHE_HIT" = 'true' ]` with an empty `CACHE_HIT` in the step log, that is expected: `actions/cache` leaves `cache-hit` unset on a full cache miss, so the step falls through to a full browser install.
 
 ## Composite Actions
 

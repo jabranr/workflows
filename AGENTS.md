@@ -17,7 +17,8 @@ A library of reusable GitHub Actions workflows for JavaScript/Node.js projects, 
 ```
 .github/workflows/
 ├── reusable-pr-checks.yml      # CI checks + optional pre-release on [publish]
-└── reusable-npm-publish.yml    # Production versioning + npm publish
+├── reusable-npm-publish.yml    # Production versioning + npm publish
+└── reusable-integration.yml    # Playwright functional/e2e/smoke/vr tests
 docs/
 ├── workflows.md                # How to add / modify workflows
 ├── git-workflow.md             # Commit conventions, branching, [publish] trigger
@@ -31,7 +32,8 @@ docs/
 3. **Do not create version tags manually** — the publish workflow creates them.
 4. **`HUSKY: 0`** must be set on any step that runs `npm version` or `npx lerna version`.
 5. **`fetch-depth: 0`** is required on `checkout` steps that run conventional-commit tooling.
-6. **Pin actions to major version tags** (`@v4`), never `@latest` or a SHA.
+6. **Jobs run on `${{ inputs.runner }}`** (default `ubuntu-24.04`), never a hard-coded `ubuntu-latest`.
+7. **Pin actions to major version tags** (`@v4`), never `@latest` or a SHA.
 
 ## Detailed Guidance
 
