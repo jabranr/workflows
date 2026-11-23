@@ -132,13 +132,17 @@ jobs:
       - run: npm run build
       - name: Pre-release with Lerna (monorepo)
         if: ${{ inputs.use-lerna }}
-        run: npx lerna publish prerelease --preid=${{ steps.fetch-short-sha.outputs.sha_short }} --dist-tag ${{ inputs.pre-release-tag }} --no-git-tag-version --no-push --yes
+        run: npx lerna publish prerelease --preid="$SHA_SHORT" --dist-tag "$PRE_RELEASE_TAG" --no-git-tag-version --no-push --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+          SHA_SHORT: ${{ steps.fetch-short-sha.outputs.sha_short }}
+          PRE_RELEASE_TAG: ${{ inputs.pre-release-tag }}
       - name: Pre-release with npm (simple repo)
         if: ${{ !inputs.use-lerna }}
         run: |
-          npm version prerelease --preid=${{ steps.fetch-short-sha.outputs.sha_short }} --no-git-tag-version
-          npm publish --tag ${{ inputs.pre-release-tag }}
+          npm version prerelease --preid="$SHA_SHORT" --no-git-tag-version
+          npm publish --tag "$PRE_RELEASE_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+          SHA_SHORT: ${{ steps.fetch-short-sha.outputs.sha_short }}
+          PRE_RELEASE_TAG: ${{ inputs.pre-release-tag }}

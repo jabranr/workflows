@@ -47,10 +47,12 @@ jobs:
     container: ${{ inputs.container-image || null }}
     steps:
       - name: Validate test-type input
+        env:
+          TEST_TYPE: ${{ inputs.test-type }}
         run: |
-          case "${{ inputs.test-type }}" in
+          case "$TEST_TYPE" in
             functional|e2e|smoke|vr) ;;
-            *) echo "::error::Unsupported test-type: ${{ inputs.test-type }} (expected one of: functional, e2e, smoke, vr)"; exit 1 ;;
+            *) echo "::error::Unsupported test-type: $TEST_TYPE (expected one of: functional, e2e, smoke, vr)"; exit 1 ;;
           esac
 
       - uses: actions/checkout@v4
@@ -126,7 +128,8 @@ jobs:
       - name: Run ${{ inputs.test-type }} tests
         env:
           CI: true
-        run: npm run test:${{ inputs.test-type }}
+          TEST_TYPE: ${{ inputs.test-type }}
+        run: npm run "test:$TEST_TYPE"
 
       - name: Save test reports
         uses: actions/upload-artifact@v4
