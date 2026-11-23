@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "actions": {
+    "actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830": {
+      "commit": "0057852bfaa89a56745cba8c7296529d2fc39830",
+      "owner_id": 44036562,
+      "repo_id": 215566462
+    },
+    "actions/checkout@11d5960a326750d5838078e36cf38b85af677262": {
+      "commit": "11d5960a326750d5838078e36cf38b85af677262",
+      "owner_id": 44036562,
+      "repo_id": 197814629
+    },
+    "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020": {
+      "commit": "49933ea5288caeca8642d1e84afbd3f7d6820020",
+      "owner_id": 44036562,
+      "repo_id": 189476904
+    },
+    "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02": {
+      "commit": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+      "owner_id": 44036562,
+      "repo_id": 192625955
+    },
+    "github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066": {
+      "commit": "33d7b85da1a04171e211befe2c739303b9a4c066",
+      "owner_id": 9919,
+      "repo_id": 259445878,
+      "via": [
+        "secure-ci/cli@4de5123f55633171aeca62a1377f8c20a63c975f"
+      ]
+    },
+    "jabranr/workflows/.github/actions/actionlint@ad3f06522e7b029504ab30aeb3fc958aab8b1bef": {
+      "commit": "ad3f06522e7b029504ab30aeb3fc958aab8b1bef",
+      "owner_id": 2131246,
+      "repo_id": 1215013760
+    },
+    "secure-ci/cli@4de5123f55633171aeca62a1377f8c20a63c975f": {
+      "commit": "4de5123f55633171aeca62a1377f8c20a63c975f",
+      "owner_id": 338613570,
+      "repo_id": 1153043892
+    }
+  }
+}

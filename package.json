@@ -10,7 +10,10 @@
   "scripts": {
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "test": "node --test .github/actions/**/*.test.cjs"
+    "test": "node --test .github/actions/**/*.test.cjs",
+    "ci:validate": "secureci validate .github/workflows/*.yml .github/actions/*/action.yml",
+    "ci:inventory": "secureci inventory --check",
+    "ci:inventory:update": "secureci inventory --update-lock"
   },
   "repository": {
     "type": "git",
@@ -28,6 +31,7 @@
   "prettier": "@jabraf/dev/prettier",
   "license": "MIT",
   "devDependencies": {
-    "@jabraf/dev": "^0.1.1"
+    "@jabraf/dev": "^0.1.1",
+    "@secureci/cli": "1.3.2"
   }
 }
