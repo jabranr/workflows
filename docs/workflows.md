@@ -152,7 +152,8 @@ steps:
   - uses: jabranr/workflows/.github/actions/wait-cf-pages-deployment@main
 ```
 
-- Always pin to `@main`.
+- Callers may pin to `@main`, or to a `main` commit SHA (`@<sha> # main`) if they lock their actions (e.g. with SecureCI).
+- Inside this repository, references to its own actions are SHA-pinned like any other action (see [YAML style](yaml-style.md#action-pinning)). Bump the SHA once a change to the referenced action has merged to `main`.
 - Composite actions accept no inputs and expose no secrets unless their `action.yml` declares them.
 - Keep helper files in the same action directory as `action.yml`.
 - Because this repository sets `"type": "module"` in `package.json`, helper files loaded via `require()` from `actions/github-script` must use the `.cjs` extension.
@@ -170,7 +171,7 @@ jobs:
       npm-token: ${{ secrets.NPM_TOKEN }}
 ```
 
-- Always pin to `@main` (this repo has no versioned releases of its own).
+- Pin to `@main`, or to a `main` commit SHA with a `# main` comment (this repo has no versioned releases of its own).
 - Pass only the secrets the callee declares — GitHub will error on undeclared secrets.
 
 ## Validating Workflow YAML Locally
@@ -187,6 +188,16 @@ Check formatting with Prettier:
 npm run format:check   # report issues
 npm run format         # rewrite files in place
 ```
+
+Validate workflows and composite actions, and check the action pins against `secureci.lock`, with [SecureCI](https://github.com/secure-ci/cli) (the same checks `secureci.yml` runs in CI):
+
+```bash
+npm run ci:validate          # syntax, expressions, script-injection checks
+npm run ci:inventory         # fail if a pin is missing from secureci.lock or has moved
+npm run ci:inventory:update  # rewrite secureci.lock after changing a pin
+```
+
+Set `GITHUB_TOKEN` (any read-only token) for the inventory commands. Without it the GitHub API rate limit can stop them from fetching repository IDs or security advisories.
 
 Validate YAML syntax with:
 

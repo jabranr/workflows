@@ -17,7 +17,7 @@ runs:
       run: mkdir -p "${{ github.workspace }}/tmp/artifacts"
 
     - name: Run Lighthouse
-      uses: foo-software/lighthouse-check-action@master
+      uses: foo-software/lighthouse-check-action@a0b9f2d21433a2fb807adf9f83fbd3b4bec0a9d7 # master
       with:
         urls: ${{ inputs.urls }}
         gitAuthor: ${{ github.actor }}
@@ -28,7 +28,7 @@ runs:
 
     - name: Upload Lighthouse artifacts
       if: ${{ github.event_name == 'push' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: lighthouse-results
         path: '${{ github.workspace }}/tmp/artifacts'
