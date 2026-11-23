@@ -7,6 +7,10 @@ on:
         description: 'Node.js version to use'
         type: number
         default: 24
+      runner:
+        description: 'Runner label for jobs (e.g. ubuntu-24.04, ubuntu-latest)'
+        type: string
+        default: 'ubuntu-24.04'
       use-lerna:
         description: 'Use Lerna for versioning and publishing (set false for simple repos)'
         type: boolean
@@ -44,7 +48,7 @@ permissions:
 
 jobs:
   version-and-publish:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     env:
       HUSKY: 0
     steps:

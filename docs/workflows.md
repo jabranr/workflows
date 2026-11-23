@@ -41,6 +41,10 @@ on:
         description: 'Node.js version to use'
         type: number
         default: 24
+      runner:
+        description: 'Runner label for jobs (e.g. ubuntu-24.04, ubuntu-latest)'
+        type: string
+        default: 'ubuntu-24.04'
       # add further inputs here
     secrets:
       # add secrets here
@@ -50,7 +54,7 @@ permissions:
 
 jobs:
   <job-id>:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -59,6 +63,10 @@ jobs:
           cache: 'npm'
       - run: npm ci
 ```
+
+### Runner
+
+Every job in a reusable workflow uses `runs-on: ${{ inputs.runner }}`, and the `runner` input defaults to a pinned image (`ubuntu-24.04`), not `ubuntu-latest`. When GitHub moves `ubuntu-latest` to a new Ubuntu release, tools with OS-specific builds, such as Playwright browsers, can break for every consumer at once. Bump the default on purpose, in its own `fix`/`feat` commit, and say in the README which consumers need to upgrade first.
 
 ## Standard CI Step Order
 
