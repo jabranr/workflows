@@ -124,7 +124,8 @@ jobs:
       - name: version package with npm (simple repo)
         if: ${{ !inputs.use-lerna }}
         run: |
-          BUMP=$(npx conventional-recommended-bump -p angular)
+          # conventional-recommended-bump no longer bundles presets, so install the angular preset with it
+          BUMP=$(npx --yes -p conventional-recommended-bump@12.1.1 -p conventional-changelog-angular@9.4.0 conventional-recommended-bump -p angular)
           npm version "$BUMP"
 
       - name: push version commit and tag (simple repo)
