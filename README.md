@@ -28,7 +28,7 @@ jobs:
       run-format-check: true # optional, default: true
       run-typecheck: true # optional, default: true
     secrets:
-      npm-token: ${{ secrets.NPM_TOKEN }} # required when run-pre-release is true
+      npm-token: ${{ secrets.NPM_TOKEN }} # optional; omit to use npm trusted publishing (OIDC)
 ```
 
 **Inputs**
@@ -48,15 +48,15 @@ jobs:
 
 **Secrets**
 
-| Secret      | Required                       | Description                                                                                                  |
-| ----------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `npm-token` | When `run-pre-release` is true | NPM token for publishing pre-release packages. The `check-publish` job fails fast if it is missing or empty. |
+| Secret      | Required | Description                                                                                                                    |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `npm-token` | No       | NPM token for publishing pre-release packages. Omit it to publish with [npm trusted publishing](#npm-trusted-publishing-oidc). |
 
 **Jobs**
 
 - **`test-and-build`** — runs `npm ci`, then `npm test`, `npm run build`, `npm run lint`, `npm run format:check`, and `npm run typecheck`. Each script step is gated by its matching `run-*` input and skipped when set to `false`.
-- **`check-publish`** — runs only when `run-pre-release` is `true`. Validates that `npm-token` is set, then inspects the PR head commit message and sets `should_publish=true` if it contains `[publish]`.
-- **`pre-release`** — publishes a pre-release version to npm. Runs only when `run-pre-release` is `true` **and** `check-publish` set `should_publish=true`.
+- **`check-publish`** — runs only when `run-pre-release` is `true`. Inspects the PR head commit message and sets `should_publish=true` if it contains `[publish]`.
+- **`pre-release`** — publishes a pre-release version to npm. Requests `id-token: write`, so the caller must grant it (see [npm trusted publishing](#npm-trusted-publishing-oidc)). Runs only when `run-pre-release` is `true` **and** `check-publish` set `should_publish=true`.
 
 ---
 
@@ -80,7 +80,7 @@ jobs:
       run-format-check: true # optional, default: true
       run-typecheck: true # optional, default: true
     secrets:
-      npm-token: ${{ secrets.NPM_TOKEN }}
+      npm-token: ${{ secrets.NPM_TOKEN }} # optional; omit to use npm trusted publishing (OIDC)
       github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
@@ -99,10 +99,10 @@ jobs:
 
 **Secrets**
 
-| Secret         | Required | Description                                       |
-| -------------- | -------- | ------------------------------------------------- |
-| `npm-token`    | Yes      | NPM token for publishing packages                 |
-| `github-token` | Yes      | GitHub token for pushing version commits and tags |
+| Secret         | Required | Description                                                                                                        |
+| -------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| `npm-token`    | No       | NPM token for publishing packages. Omit it to publish with [npm trusted publishing](#npm-trusted-publishing-oidc). |
+| `github-token` | Yes      | GitHub token for pushing version commits and tags                                                                  |
 
 **Steps**
 
@@ -114,6 +114,29 @@ jobs:
 6. **Simple repo:** bumps the version with `conventional-recommended-bump`, pushes the commit and tag, then publishes via `npm publish`
 
 `HUSKY: 0` is set at the job level so it applies to every step that runs `npm version` or `npx lerna version`.
+
+The workflow declares `contents: write` and `id-token: write`, so the caller must grant both.
+
+---
+
+### npm trusted publishing (OIDC)
+
+`reusable-npm-publish.yml` and the `pre-release` job of `reusable-pr-checks.yml` publish with [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) when no `npm-token` is passed. npm also adds provenance attestations automatically.
+
+1. On npmjs.com, add a trusted publisher for the package with your repository and the **caller** workflow's filename (e.g. `npm-publish.yml`), not the reusable workflow's. npm checks the workflow that was triggered. Add one trusted publisher per caller file (up to 10), e.g. one for main-branch publishing and one for PR pre-releases. Allow `npm publish`, not only `npm stage publish`.
+2. Grant `id-token: write` in the caller:
+
+   ```yaml
+   permissions:
+     contents: write # contents: read for reusable-pr-checks.yml
+     id-token: write
+   ```
+
+3. Make `repository.url` in `package.json` match the GitHub repository exactly (e.g. `git+https://github.com/<owner>/<repo>.git`).
+4. Use Node.js 24 (the default). Trusted publishing needs npm 11.5.1 or later; without `npm-token`, the job fails early on an older npm.
+5. Stop passing `npm-token`. If a token is passed, npm still prefers OIDC when it is available.
+
+Pre-releases from pull requests opened from forks cannot publish this way, because GitHub gives fork PRs no OIDC token.
 
 ---
 
