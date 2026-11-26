@@ -1,3 +1,6 @@
+# Validate this repository's workflows and actions with SecureCI, and fail
+# when an action ref has moved since it was locked in secureci.lock.
+# After adding or bumping an action: `npm run ci:inventory:update`.
 name: SecureCI GHA
 
 on:
@@ -12,17 +15,18 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: SecureCI GHA
         uses: secure-ci/cli@4de5123f55633171aeca62a1377f8c20a63c975f # v1.3.2
         with:
-          # Fail when an action ref has moved since it was locked in secureci.lock.
+          # Validate composite actions too, not only .github/workflows.
+          files: .github/workflows/*.yml .github/actions/*/action.yml
           inventory: check
-          # Code scanning isn't enabled on this repository, so skip the SARIF
-          # upload; the job still fails when validation does.
+          # Code scanning isn't set up for this repository, so skip the SARIF
+          # upload; the job still fails when validation does. To see results in
+          # the Security tab, enable code scanning, drop this, and grant
+          # security-events: write and actions: read.
           upload-sarif: false

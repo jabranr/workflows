@@ -7,6 +7,10 @@ on:
         description: 'Node.js version to use'
         type: string
         default: '24.15.0' # @see https://github.com/microsoft/playwright/issues/40998
+      runner:
+        description: 'Runner label for jobs (e.g. ubuntu-24.04, ubuntu-latest)'
+        type: string
+        default: 'ubuntu-24.04'
       test-type:
         description: 'Type of tests to run (functional, e2e, smoke, vr)'
         type: string
@@ -39,7 +43,7 @@ jobs:
   integration:
     name: ${{ inputs.test-type }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     container: ${{ inputs.container-image || null }}
     steps:
       - name: Validate test-type input
@@ -51,11 +55,10 @@ jobs:
             *) echo "::error::Unsupported test-type: $TEST_TYPE (expected one of: functional, e2e, smoke, vr)"; exit 1 ;;
           esac
 
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.js
         if: ${{ inputs.run-node-setup }}
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ inputs.node-version }}
           cache: 'npm'
@@ -69,23 +72,56 @@ jobs:
         run: |
           VERSION=$(node -p "require('@playwright/test/package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # Playwright ships browser builds per OS release (e.g. ubuntu24.04, ubuntu26.04), so the
+          # cache key includes it. Read in a subshell so os-release's own VERSION does not leak.
+          if [ -r /etc/os-release ]; then
+            OS_RELEASE=$(. /etc/os-release && echo "${ID}${VERSION_ID}")
+          else
+            OS_RELEASE=unknown
+          fi
+          echo "os-release=$OS_RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browsers
         if: ${{ inputs.run-playwright-setup }}
         id: playwright-cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright-version.outputs.os-release }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browsers
         if: ${{ inputs.run-playwright-setup }}
         timeout-minutes: 10
+        env:
+          # actions/cache leaves cache-hit unset (empty) on a full miss, so anything but 'true' installs.
+          CACHE_HIT: ${{ steps.playwright-cache.outputs.cache-hit }}
+          PLAYWRIGHT_VERSION: ${{ steps.playwright-version.outputs.version }}
         run: |
-          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = 'true' ]; then
-            npx playwright install-deps
-          else
-            npx playwright install --with-deps chromium
+          LOG="${RUNNER_TEMP:-/tmp}/playwright-install.log"
+          RC_FILE="${RUNNER_TEMP:-/tmp}/playwright-install.rc"
+          # Stream the output and keep a copy for the hints below (POSIX sh has no pipefail).
+          {
+            rc=0
+            if [ "$CACHE_HIT" = 'true' ]; then
+              npx playwright install-deps || rc=$?
+            else
+              npx playwright install --with-deps chromium || rc=$?
+            fi
+            echo "$rc" > "$RC_FILE"
+          } 2>&1 | tee "$LOG"
+          rc=$(cat "$RC_FILE")
+
+          HINT="Upgrade @playwright/test in your repository (Ubuntu 26.04 needs 1.61.0 or newer), or pass 'runner: ubuntu-24.04' to reusable-integration.yml."
+          if [ "$rc" -ne 0 ]; then
+            if grep -q 'does not support chromium on' "$LOG"; then
+              PLATFORM=$(sed -n 's/.*does not support chromium on \([^ ]*\).*/\1/p' "$LOG" | head -n 1)
+              echo "::error title=Playwright cannot install chromium::Playwright $PLAYWRIGHT_VERSION has no chromium build for $PLATFORM. $HINT"
+            fi
+            exit "$rc"
+          fi
+          # install-deps only warns (exit 0) when it has no dependency list for this OS.
+          if grep -q 'Cannot install dependencies for' "$LOG"; then
+            echo "::warning title=Playwright system dependencies not installed::Playwright $PLAYWRIGHT_VERSION does not support this runner OS, so browsers may fail to launch. $HINT"
           fi
 
       - name: Run ${{ inputs.test-type }} tests
@@ -95,7 +131,7 @@ jobs:
         run: npm run "test:$TEST_TYPE"
 
       - name: Save test reports
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-${{ inputs.test-type }}

@@ -18,16 +18,21 @@ Conventions for authoring workflow files in this repository.
 
 ## Action Pinning
 
-- Pin all `uses:` references to a **full commit SHA**, with the tag as a trailing comment. Never use a bare tag, `@latest` or a branch. `npm run ci:pin` rewrites tags to SHAs; `npm run ci:inventory:update` then refreshes `secureci.lock`, which CI checks for drift.
+- Pin all `uses:` references to a **full 40-character commit SHA**, with the exact version (or branch, for this repo's own actions) as a trailing comment. A tag or branch can be moved to point at different code; a SHA cannot.
 
   ```yaml
   # ✅ correct
-  - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+  - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+  - uses: jabranr/workflows/.github/actions/actionlint@ad3f06522e7b029504ab30aeb3fc958aab8b1bef # main
 
   # ❌ avoid
   - uses: actions/checkout@v4
   - uses: actions/checkout@main
+  - uses: actions/checkout@abc1234def
   ```
+
+- Resolve a tag to its SHA with `git ls-remote https://github.com/<owner>/<repo> 'refs/tags/<tag>^{}' 'refs/tags/<tag>'` (the `^{}` line is the commit for annotated tags).
+- After adding, removing or bumping a pin, run `npm run ci:inventory:update` and commit the updated `secureci.lock`. The `secureci.yml` workflow runs `secureci inventory --check` and fails when a pin is missing from the lock or a locked ref has moved.
 
 ## Naming Conventions
 

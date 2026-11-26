@@ -41,6 +41,10 @@ on:
         description: 'Node.js version to use'
         type: number
         default: 24
+      runner:
+        description: 'Runner label for jobs (e.g. ubuntu-24.04, ubuntu-latest)'
+        type: string
+        default: 'ubuntu-24.04'
       # add further inputs here
     secrets:
       # add secrets here
@@ -50,7 +54,7 @@ permissions:
 
 jobs:
   <job-id>:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -59,6 +63,10 @@ jobs:
           cache: 'npm'
       - run: npm ci
 ```
+
+### Runner
+
+Every job in a reusable workflow uses `runs-on: ${{ inputs.runner }}`, and the `runner` input defaults to a pinned image (`ubuntu-24.04`), not `ubuntu-latest`. When GitHub moves `ubuntu-latest` to a new Ubuntu release, tools with OS-specific builds, such as Playwright browsers, can break for every consumer at once. Bump the default on purpose, in its own `fix`/`feat` commit, and say in the README which consumers need to upgrade first.
 
 ## Standard CI Step Order
 
@@ -103,7 +111,8 @@ When a workflow step publishes to npm, these conditions must all be met:
 | Requirement                                                          | Reason                                                                                                                                                                         |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `registry-url: https://registry.npmjs.org/` in `setup-node`          | Required for `NODE_AUTH_TOKEN` to be picked up                                                                                                                                 |
-| `env: NODE_AUTH_TOKEN: ${{ secrets.npm-token }}` on the publish step | Auth for the npm registry                                                                                                                                                      |
+| `env: NODE_AUTH_TOKEN: ${{ secrets.npm-token }}` on the publish step | Token auth for the npm registry; empty when the caller uses trusted publishing                                                                                                 |
+| `id-token: write` permission on the publishing job                   | Required for npm trusted publishing (OIDC) when `npm-token` is not passed; the caller must grant it too                                                                        |
 | `fetch-depth: 0` in `checkout`                                       | Required for conventional-commit history traversal                                                                                                                             |
 | `token: ${{ secrets.github-token }}` in `checkout`                   | Required when the job pushes commits or tags                                                                                                                                   |
 | `HUSKY: 0` covering every versioning step                            | Prevents git hooks from blocking version commits — set at job level when more than one step in the job runs `npm version` or `npx lerna version`, otherwise step-level is fine |
@@ -144,7 +153,8 @@ steps:
   - uses: jabranr/workflows/.github/actions/wait-cf-pages-deployment@main
 ```
 
-- Always pin to `@main`.
+- Callers may pin to `@main`, or to a `main` commit SHA (`@<sha> # main`) if they lock their actions (e.g. with SecureCI).
+- Inside this repository, references to its own actions are SHA-pinned like any other action (see [YAML style](yaml-style.md#action-pinning)). Bump the SHA once a change to the referenced action has merged to `main`.
 - Composite actions accept no inputs and expose no secrets unless their `action.yml` declares them.
 - Keep helper files in the same action directory as `action.yml`.
 - Because this repository sets `"type": "module"` in `package.json`, helper files loaded via `require()` from `actions/github-script` must use the `.cjs` extension.
@@ -162,7 +172,7 @@ jobs:
       npm-token: ${{ secrets.NPM_TOKEN }}
 ```
 
-- Always pin to `@main` (this repo has no versioned releases of its own).
+- Pin to `@main`, or to a `main` commit SHA with a `# main` comment (this repo has no versioned releases of its own).
 - Pass only the secrets the callee declares — GitHub will error on undeclared secrets.
 
 ## Validating Workflow YAML Locally
@@ -180,19 +190,20 @@ npm run format:check   # report issues
 npm run format         # rewrite files in place
 ```
 
+Validate workflows and composite actions, and check the action pins against `secureci.lock`, with [SecureCI](https://github.com/secure-ci/cli) (the same checks `secureci.yml` runs in CI):
+
+```bash
+npm run ci:validate          # syntax, expressions, script-injection checks
+npm run ci:inventory         # fail if a pin is missing from secureci.lock or has moved
+npm run ci:inventory:update  # rewrite secureci.lock after changing a pin
+```
+
+Set `GITHUB_TOKEN` (any read-only token) for the inventory commands. Without it the GitHub API rate limit can stop them from fetching repository IDs or security advisories.
+
 Validate YAML syntax with:
 
 ```bash
 npx js-yaml .github/workflows/reusable-pr-checks.yml
-```
-
-Check workflows with SecureCI (syntax, template injection, token permissions, pinning and action drift), as CI does:
-
-```bash
-npm run ci:validate    # secureci validate .github/workflows/*.yml
-npm run ci:pin         # pin new or bumped action tags to commit SHAs
-npm run ci:inventory   # fail if a locked action ref has moved
-npm run ci:inventory:update   # rewrite secureci.lock after adding or bumping an action
 ```
 
 Or install `actionlint` for full GitHub Actions semantic validation:
