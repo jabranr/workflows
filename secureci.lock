@@ -26,7 +26,7 @@
       "owner_id": 9919,
       "repo_id": 259445878,
       "via": [
-        "secure-ci/cli@4de5123f55633171aeca62a1377f8c20a63c975f"
+        "secure-ci/cli@251440e56fb0d03d8864b0dd29a4431d81ff63d8"
       ]
     },
     "jabranr/workflows/.github/actions/actionlint@ad3f06522e7b029504ab30aeb3fc958aab8b1bef": {
@@ -34,8 +34,8 @@
       "owner_id": 2131246,
       "repo_id": 1215013760
     },
-    "secure-ci/cli@4de5123f55633171aeca62a1377f8c20a63c975f": {
-      "commit": "4de5123f55633171aeca62a1377f8c20a63c975f",
+    "secure-ci/cli@251440e56fb0d03d8864b0dd29a4431d81ff63d8": {
+      "commit": "251440e56fb0d03d8864b0dd29a4431d81ff63d8",
       "owner_id": 338613570,
       "repo_id": 1153043892
     }
