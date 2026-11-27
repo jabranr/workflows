@@ -286,6 +286,54 @@ This error occurs when the `GITHUB_TOKEN` does not have the required permissions
 
 ---
 
+### `actions/cf-pages-preview-url`
+
+Resolves the URL to test against after a Cloudflare Pages deployment. On `pull_request` / `pull_request_target` events it returns the **Branch Preview URL** from the `Cloudflare Pages` check run for the PR head commit. On any other event it returns `production-url`.
+
+If the check run has no Branch Preview URL (or the Checks API call fails), it computes the alias the way Cloudflare does: lowercased, runs of non-alphanumerics become `-`, cut to 28 characters, and leading or trailing `-` trimmed (`claude/secureci-cli-setup-inventory-gdmnwy` → `claude-secureci-cli-setup-in`). It logs a warning when it falls back. The fallback needs `pages-domain`; without it, the action fails instead of guessing. The check run comes first because Cloudflare adds a random suffix when two branches cut to the same alias (e.g. `dependabot-npm-and-yarn-liqu-o3mj`).
+
+Run it after `wait-cf-pages-deployment` so the check run has completed. Like that action, it loads a bundled CommonJS helper (`cf-pages-preview-url.cjs`) via `actions/github-script`.
+
+**Usage**
+
+```yaml
+performance-audit:
+  needs: deployment-status
+  runs-on: ubuntu-latest
+  permissions:
+    checks: read
+  steps:
+    - name: Get domain
+      id: get-domain
+      uses: jabranr/workflows/.github/actions/cf-pages-preview-url@main
+      with:
+        production-url: 'https://jabran.me'
+        pages-domain: 'jabranr.pages.dev' # optional, enables the computed fallback
+
+    - uses: jabranr/workflows/.github/actions/performance-audit@main
+      with:
+        urls: '${{ steps.get-domain.outputs.url }},${{ steps.get-domain.outputs.url }}/resume/'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**Inputs**
+
+| Input            | Required | Default | Description                                                                                                                       |
+| ---------------- | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `production-url` | Yes      | —       | URL returned outside pull requests. A trailing `/` is removed.                                                                    |
+| `pages-domain`   | No       | `''`    | The project's `pages.dev` domain (e.g. `jabranr.pages.dev`). Narrows the check run match and enables the computed-alias fallback. |
+| `github-token`   | No       | —       | Token for Checks API calls. Defaults to `github.token`.                                                                           |
+
+**Outputs**
+
+| Output | Description                                 |
+| ------ | ------------------------------------------- |
+| `url`  | The resolved URL, without a trailing slash. |
+
+Requires `checks: read` on pull requests.
+
+---
+
 ### `actions/performance-audit`
 
 Runs a [Lighthouse](https://github.com/foo-software/lighthouse-check-action) performance audit against one or more URLs. On `pull_request` events the results are posted as a PR comment; on `push` events the HTML reports are uploaded as a `lighthouse-results` workflow artifact. Intended to run after a deployment (e.g. to Cloudflare Pages).
