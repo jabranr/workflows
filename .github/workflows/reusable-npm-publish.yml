@@ -44,12 +44,15 @@ on:
         required: true
 
 permissions:
-  contents: write
-  id-token: write # npm trusted publishing (OIDC) and provenance
+  contents: read
 
 jobs:
   version-and-publish:
     runs-on: ${{ inputs.runner }}
+    # Pushes the version commit and tags.
+    permissions:
+      contents: write
+      id-token: write # npm trusted publishing (OIDC) and provenance
     env:
       HUSKY: 0
     steps:

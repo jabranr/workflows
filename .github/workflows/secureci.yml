@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: SecureCI GHA
-        uses: secure-ci/cli@4de5123f55633171aeca62a1377f8c20a63c975f # v1.3.2
+        uses: secure-ci/cli@251440e56fb0d03d8864b0dd29a4431d81ff63d8 # v1.5.0
         with:
           # Validate composite actions too, not only .github/workflows.
           files: .github/workflows/*.yml .github/actions/*/action.yml
