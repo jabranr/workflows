@@ -1,0 +1,43 @@
+name: Cloudflare Pages preview URL
+description: Resolve the Cloudflare Pages branch preview URL on pull requests, or the production URL otherwise
+
+inputs:
+  production-url:
+    description: URL returned on non-pull_request events (e.g. https://example.com)
+    required: true
+  pages-domain:
+    description: >-
+      The project's pages.dev domain (e.g. my-project.pages.dev). Narrows the check run match and enables the
+      computed-alias fallback when the check run has no Branch Preview URL
+    required: false
+    default: ''
+  github-token:
+    description: GitHub token
+    required: false
+
+outputs:
+  url:
+    description: Resolved URL, without a trailing slash
+    value: ${{ steps.resolve.outputs.url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Resolve preview URL
+      id: resolve
+      uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+      env:
+        PRODUCTION_URL: ${{ inputs.production-url }}
+        PAGES_DOMAIN: ${{ inputs.pages-domain }}
+      with:
+        github-token: ${{ inputs.github-token || github.token }}
+        script: |
+          const resolveCloudflarePagesPreviewUrl = require('${{ github.action_path }}/cf-pages-preview-url.cjs');
+          const url = await resolveCloudflarePagesPreviewUrl({
+            github,
+            context,
+            core,
+            productionUrl: process.env.PRODUCTION_URL,
+            pagesDomain: process.env.PAGES_DOMAIN,
+          });
+          core.setOutput('url', url);

@@ -20,7 +20,7 @@ A library of reusable GitHub Actions workflows for JavaScript/Node.js projects, 
 ├── reusable-npm-publish.yml    # Production versioning + npm publish
 ├── reusable-integration.yml    # Playwright functional/e2e/smoke/vr tests
 └── secureci.yml                # This repo's CI: SecureCI validate + inventory check
-.github/actions/                # Composite actions (actionlint, performance-audit, wait-cf-pages-deployment)
+.github/actions/                # Composite actions (actionlint, cf-pages-preview-url, performance-audit, wait-cf-pages-deployment)
 secureci.lock                   # Locked commit SHAs for every action in use
 docs/
 ├── workflows.md                # How to add / modify workflows
